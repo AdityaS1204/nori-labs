@@ -1,8 +1,7 @@
 /**
  * The Nori robot's on-screen face model.
  *
- * Unlike the stylised gallery faces (`lib/expressions.ts`), this mirrors the
- * robot's *actual* display: a dark screen with two glowing, rounded-rectangle
+ * This mirrors the robot's *actual* display: a dark screen with two glowing, rounded-rectangle
  * "eyes" and no mouth. Emotion is expressed entirely through eye geometry
  * (height, corner radius, tilt, offset), which is what the playground edits.
  */
