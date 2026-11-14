@@ -1,10 +1,19 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { RefreshIcon, Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { RefreshIcon, Copy01Icon, Tick02Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
 
-import { NEUTRAL_FACE, type NoriFaceParams } from "@/lib/nori-face";
+import { type NoriFaceParams } from "@/lib/nori-face";
+import {
+  clonePreset,
+  coverState,
+  newPreset,
+  newState,
+  type Preset,
+} from "@/lib/presets";
+import { createPreset } from "@/lib/presets-db";
 import type {
   BrowFieldKey,
   EyeFieldKey,
@@ -13,115 +22,231 @@ import type {
 } from "./faceFields";
 import ControlPanel from "@/components/controls/ControlPanel";
 import FaceControls from "./FaceControls";
+import StatePicker from "./StatePicker";
+import SavePresetDialog, { type SavePresetMeta } from "./SavePresetDialog";
 import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
 
-const cloneFace = (f: NoriFaceParams): NoriFaceParams => ({
-  ...f,
-  left: { ...f.left },
-  right: { ...f.right },
-  leftBrow: { ...f.leftBrow },
-  rightBrow: { ...f.rightBrow },
-});
-
 interface ExpressionEditorProps {
-  /** Starting face; defaults to the robot's neutral expression. */
-  initial?: NoriFaceParams;
-  /** Display name shown in the toolbar. */
-  name?: string;
+  /** Opens an existing preset for remixing; defaults to a fresh draft. */
+  initialPreset?: Preset;
 }
 
 /**
- * The playground: owns the live `NoriFaceParams` state, renders the DialKit-
- * style control panel (left) and the Motion-animated face on the preview
- * canvas (right).
+ * The playground. Owns a whole `Preset` — a bundle of named expression states
+ * — and edits one active state at a time with the control kit, while the
+ * Motion-animated face previews it. The active state is chosen from the
+ * `StatePicker` dropdown; the bundle is published to the library via the save
+ * dialog.
  */
-export default function ExpressionEditor({
-  initial = NEUTRAL_FACE,
-  name = "Neutral",
-}: ExpressionEditorProps) {
-  const [face, setFace] = useState<NoriFaceParams>(() => cloneFace(initial));
+export default function ExpressionEditor({ initialPreset }: ExpressionEditorProps) {
+  const router = useRouter();
+
+  const [preset, setPreset] = useState<Preset>(() =>
+    initialPreset ? clonePreset(initialPreset) : newPreset(),
+  );
+  const [activeId, setActiveId] = useState<string>(() =>
+    initialPreset ? initialPreset.states[0].id : preset.states[0].id,
+  );
   const [linked, setLinked] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  const onGlobalChange = useCallback((key: GlobalFieldKey, value: number) => {
-    setFace((f) => ({ ...f, [key]: value }));
-  }, []);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const onColorChange = useCallback((value: string) => {
-    setFace((f) => ({ ...f, color: value }));
-  }, []);
+  const active = useMemo(
+    () => preset.states.find((s) => s.id === activeId) ?? preset.states[0],
+    [preset.states, activeId],
+  );
 
+  /* ── Face edits (write into the active state's face) ── */
+  const patchFace = useCallback(
+    (patch: (f: NoriFaceParams) => NoriFaceParams) => {
+      setPreset((p) => ({
+        ...p,
+        states: p.states.map((s) =>
+          s.id === activeId ? { ...s, face: patch(s.face) } : s,
+        ),
+      }));
+    },
+    [activeId],
+  );
+
+  const onGlobalChange = useCallback(
+    (key: GlobalFieldKey, value: number) =>
+      patchFace((f) => ({ ...f, [key]: value })),
+    [patchFace],
+  );
+  const onColorChange = useCallback(
+    (value: string) => patchFace((f) => ({ ...f, color: value })),
+    [patchFace],
+  );
   const onEyeChange = useCallback(
-    (side: EyeSide, key: EyeFieldKey, value: number) => {
-      setFace((f) => ({
+    (side: EyeSide, key: EyeFieldKey, value: number) =>
+      patchFace((f) => ({
         ...f,
         left: side === "right" ? f.left : { ...f.left, [key]: value },
         right: side === "left" ? f.right : { ...f.right, [key]: value },
-      }));
-    },
-    [],
+      })),
+    [patchFace],
   );
-
-  const onToggleBrows = useCallback((value: boolean) => {
-    setFace((f) => ({ ...f, browsEnabled: value }));
-  }, []);
-
+  const onToggleBrows = useCallback(
+    (value: boolean) => patchFace((f) => ({ ...f, browsEnabled: value })),
+    [patchFace],
+  );
   const onBrowChange = useCallback(
-    (side: EyeSide, key: BrowFieldKey, value: number) => {
-      setFace((f) => ({
+    (side: EyeSide, key: BrowFieldKey, value: number) =>
+      patchFace((f) => ({
         ...f,
         leftBrow:
           side === "right" ? f.leftBrow : { ...f.leftBrow, [key]: value },
         rightBrow:
           side === "left" ? f.rightBrow : { ...f.rightBrow, [key]: value },
-      }));
+      })),
+    [patchFace],
+  );
+
+  /* ── State (bundle) management ── */
+  const addState = useCallback((label: string) => {
+    const s = newState(label);
+    setPreset((p) => ({ ...p, states: [...p.states, s] }));
+    setActiveId(s.id);
+  }, []);
+
+  const renameState = useCallback((id: string, label: string) => {
+    setPreset((p) => ({
+      ...p,
+      states: p.states.map((s) => (s.id === id ? { ...s, label } : s)),
+    }));
+  }, []);
+
+  const removeState = useCallback(
+    (id: string) => {
+      setPreset((p) => {
+        if (p.states.length <= 1) return p;
+        const states = p.states.filter((s) => s.id !== id);
+        const coverStateId =
+          p.coverStateId === id ? states[0].id : p.coverStateId;
+        return { ...p, states, coverStateId };
+      });
+      setActiveId((cur) => {
+        if (cur !== id) return cur;
+        const rest = preset.states.filter((s) => s.id !== id);
+        return rest[0]?.id ?? cur;
+      });
     },
+    [preset.states],
+  );
+
+  const setCover = useCallback(
+    (id: string) => setPreset((p) => ({ ...p, coverStateId: id })),
     [],
   );
 
-  const reset = useCallback(() => {
-    setFace(cloneFace(NEUTRAL_FACE));
-    setLinked(true);
+  const moveState = useCallback((id: string, dir: -1 | 1) => {
+    setPreset((p) => {
+      const i = p.states.findIndex((s) => s.id === id);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= p.states.length) return p;
+      const states = [...p.states];
+      [states[i], states[j]] = [states[j], states[i]];
+      return { ...p, states };
+    });
   }, []);
+
+  /* ── Toolbar actions ── */
+  const resetActive = useCallback(() => {
+    const fresh = newState(active.label).face;
+    patchFace(() => fresh);
+    setLinked(true);
+  }, [active.label, patchFace]);
 
   const copyValues = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(JSON.stringify(face, null, 2));
+      await navigator.clipboard.writeText(JSON.stringify(active.face, null, 2));
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch {
       /* clipboard may be unavailable */
     }
-  }, [face]);
+  }, [active.face]);
+
+  const handleSubmit = useCallback(
+    async (meta: SavePresetMeta) => {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        await createPreset({
+          name: meta.name,
+          description: meta.description,
+          author: meta.author,
+          category: meta.category,
+          states: preset.states,
+          coverStateId: preset.coverStateId,
+          accent: coverState(preset).face.color,
+        });
+        setSaveOpen(false);
+        router.push("/library");
+        router.refresh();
+      } catch (err) {
+        setSaveError(err instanceof Error ? err.message : "Could not save.");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [preset, router],
+  );
 
   const toolbar = (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={reset}
-        aria-label="Reset to neutral"
-        title="Reset to neutral"
-        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-white/55 transition-colors hover:bg-white/[0.09] hover:text-white"
-      >
-        <HugeiconsIcon icon={RefreshIcon} size={16} color="currentColor" />
-      </button>
-      <div className="flex h-9 flex-1 items-center justify-center rounded-[9px] bg-white/[0.05] px-3">
-        <span className="truncate text-[13px] font-medium text-white/85">
-          {name}
-        </span>
-      </div>
-      <button
-        type="button"
-        onClick={copyValues}
-        aria-label="Copy parameters"
-        title="Copy parameters as JSON"
-        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-white/55 transition-colors hover:bg-white/[0.09] hover:text-white"
-      >
-        <HugeiconsIcon
-          icon={copied ? Tick02Icon : Copy01Icon}
-          size={16}
-          color={copied ? "#E8BE3C" : "currentColor"}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={resetActive}
+          aria-label="Reset this state to neutral"
+          title="Reset this state to neutral"
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-white/55 transition-colors hover:bg-white/[0.09] hover:text-white"
+        >
+          <HugeiconsIcon icon={RefreshIcon} size={16} color="currentColor" />
+        </button>
+
+        <StatePicker
+          states={preset.states}
+          activeId={activeId}
+          coverStateId={preset.coverStateId}
+          onSelect={setActiveId}
+          onAdd={addState}
+          onRename={renameState}
+          onRemove={removeState}
+          onSetCover={setCover}
+          onMove={moveState}
         />
+
+        <button
+          type="button"
+          onClick={copyValues}
+          aria-label="Copy this state's parameters"
+          title="Copy this state's parameters as JSON"
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[9px] bg-white/[0.05] text-white/55 transition-colors hover:bg-white/[0.09] hover:text-white"
+        >
+          <HugeiconsIcon
+            icon={copied ? Tick02Icon : Copy01Icon}
+            size={16}
+            color={copied ? "#E8BE3C" : "currentColor"}
+          />
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          setSaveError(null);
+          setSaveOpen(true);
+        }}
+        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[#E8BE3C] text-[13px] font-semibold text-[#0d0d0e] transition-[box-shadow,transform] hover:shadow-[0_0_0_1px_#E8BE3C,0_4px_16px_rgba(232,190,60,0.25)] motion-safe:active:scale-[0.99]"
+      >
+        <HugeiconsIcon icon={FloppyDiskIcon} size={15} color="currentColor" />
+        Save to library
       </button>
     </div>
   );
@@ -132,7 +257,7 @@ export default function ExpressionEditor({
       <aside className="w-[300px] flex-shrink-0">
         <ControlPanel title="Expression" toolbar={toolbar}>
           <FaceControls
-            face={face}
+            face={active.face}
             linked={linked}
             onToggleLink={setLinked}
             onGlobalChange={onGlobalChange}
@@ -149,15 +274,28 @@ export default function ExpressionEditor({
         className="flex flex-1 flex-col overflow-hidden rounded-xl border border-white/[0.07] bg-black"
         style={{ paddingTop: 0 }}
       >
-        <div className="flex flex-shrink-0 items-center border-b border-white/[0.06] px-4 py-2.5">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-white/[0.06] px-4 py-2.5">
           <span className="text-[11px] font-semibold tracking-[0.08em] text-white/35">
             Preview
           </span>
+          <span className="text-[11px] font-medium text-white/40">
+            {active.label}
+          </span>
         </div>
         <div className="min-h-0 flex-1 bg-black p-4">
-          <NoriFaceLive face={face} className="h-full w-full" />
+          <NoriFaceLive face={active.face} className="h-full w-full" />
         </div>
       </main>
+
+      {saveOpen && (
+        <SavePresetDialog
+          preset={preset}
+          onClose={() => setSaveOpen(false)}
+          onSubmit={handleSubmit}
+          submitting={saving}
+          error={saveError}
+        />
+      )}
     </div>
   );
 }
