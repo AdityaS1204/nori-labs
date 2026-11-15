@@ -6,12 +6,15 @@
  * (height, corner radius, tilt, offset), which is what the playground edits.
  */
 
+/** The eye's silhouette. `bar` is the default rounded rectangle. */
+export type EyeShape = "bar" | "arc" | "bracket" | "angle" | "custom";
+
 export interface NoriEyeParams {
   /** Eye width in viewBox units. */
   width: number;
   /** Fully-open eye height in viewBox units. */
   height: number;
-  /** Corner radius; `width / 2` gives a stadium/pill shape. */
+  /** Corner radius; `width / 2` gives a stadium/pill shape. Used by `bar`. */
   radius: number;
   /** 0–1 vertical scale, for blinks and squints (1 = fully open). */
   openness: number;
@@ -19,6 +22,16 @@ export interface NoriEyeParams {
   tilt: number;
   /** Vertical offset from the face centre line. */
   offsetY: number;
+  /** Which silhouette to draw. Defaults to `bar`. */
+  shape: EyeShape;
+  /** Stroke weight for line-like shapes (arc / bracket / angle). */
+  thickness: number;
+  /** Custom path geometry (`shape === "custom"`), a bare `d`. */
+  customPath?: string;
+  /** Measured [x, y, w, h] of `customPath`, used to auto-fit it into the eye. */
+  customViewBox?: [number, number, number, number];
+  /** Draw the custom path as an outline (stroke) instead of a fill. */
+  customStroke?: boolean;
 }
 
 export interface NoriBrowParams {
@@ -66,6 +79,8 @@ const NEUTRAL_EYE: NoriEyeParams = {
   openness: 1,
   tilt: 0,
   offsetY: 0,
+  shape: "bar",
+  thickness: 16,
 };
 
 /** A single neutral brow — a flat, softly-rounded bar floating above the eye. */
@@ -137,4 +152,86 @@ export function buildBrowPath({
     `A ${n(r)} ${n(r)} 0 0 1 ${n(-half + r)} ${n(topY)}`,
     "Z",
   ].join(" ");
+}
+
+export interface EyeShapeDef {
+  id: EyeShape;
+  label: string;
+  /** How the path is painted. `bar` is drawn as a `<rect>` fill. */
+  mode: "fill" | "stroke";
+  /** Directional shapes mirror horizontally on the right eye. */
+  directional: boolean;
+  /** A 24×24 glyph `d` for the shape-picker button. */
+  glyph: string;
+}
+
+/** The curated eye shapes offered in the picker (plus `custom`). */
+export const EYE_SHAPES: EyeShapeDef[] = [
+  { id: "bar", label: "Bar", mode: "fill", directional: false, glyph: "M10 5 h4 a2 2 0 0 1 2 2 v10 a2 2 0 0 1 -2 2 h-4 a2 2 0 0 1 -2 -2 v-10 a2 2 0 0 1 2 -2 Z" },
+  { id: "arc", label: "Arc", mode: "stroke", directional: false, glyph: "M5 15 Q12 6 19 15" },
+  { id: "bracket", label: "Bracket", mode: "stroke", directional: true, glyph: "M15 5 Q8 12 15 19" },
+  { id: "angle", label: "Angle", mode: "stroke", directional: true, glyph: "M9 5 L16 12 L9 19" },
+  { id: "custom", label: "Custom", mode: "fill", directional: true, glyph: "M6 6 H18 V18 H6 Z" },
+];
+
+export function eyeShapeDef(shape: EyeShape | undefined): EyeShapeDef {
+  return EYE_SHAPES.find((s) => s.id === shape) ?? EYE_SHAPES[0];
+}
+export const isDirectional = (shape: EyeShape | undefined) =>
+  eyeShapeDef(shape).directional;
+export const eyeRenderMode = (shape: EyeShape | undefined) =>
+  eyeShapeDef(shape).mode;
+
+/**
+ * Build the SVG path for one non-`bar` eye, centred on the origin and sized to
+ * width×height (like `buildBrowPath`). `bar` renders as a `<rect>`, not here.
+ * `custom` returns the author's raw path (the renderer scales it).
+ */
+export function buildEyePath(
+  eye: Pick<NoriEyeParams, "shape" | "width" | "height" | "customPath">,
+): string {
+  const hw = eye.width / 2;
+  const hh = eye.height / 2;
+  const n = (v: number) => Number(v.toFixed(2));
+
+  switch (eye.shape) {
+    case "arc":
+      // Gentle upward dome ◠ (happy / content).
+      return `M ${n(-hw)} ${n(hh * 0.55)} Q 0 ${n(-hh * 1.1)} ${n(hw)} ${n(hh * 0.55)}`;
+    case "bracket": {
+      // Left-bowing "(" ; the right eye mirrors to ")".
+      const bx = hw * 0.35;
+      return `M ${n(bx)} ${n(-hh)} Q ${n(-hw)} 0 ${n(bx)} ${n(hh)}`;
+    }
+    case "angle": {
+      // ">" pointing inward on the left eye; the right mirrors to "<".
+      const bx = -hw * 0.5;
+      return `M ${n(bx)} ${n(-hh)} L ${n(hw)} 0 L ${n(bx)} ${n(hh)}`;
+    }
+    case "custom":
+      return eye.customPath?.trim() || "";
+    default:
+      // Fallback centred rectangle (bar normally uses <rect>).
+      return `M ${n(-hw)} ${n(-hh)} H ${n(hw)} V ${n(hh)} H ${n(-hw)} Z`;
+  }
+}
+
+/**
+ * Transform that normalises a custom path (measured `viewBox`) into a centred
+ * 100-unit box, preserving aspect ratio. Composed before the eye's own
+ * size/placement transform, so any coordinate system "just fits". Returns ""
+ * (identity) when there's nothing to fit.
+ */
+export function customFitTransform(
+  viewBox: [number, number, number, number] | undefined,
+): string {
+  if (!viewBox) return "";
+  const [bx, by, bw, bh] = viewBox;
+  const span = Math.max(bw, bh);
+  if (!span || !Number.isFinite(span)) return "";
+  const n = (v: number) => Number(v.toFixed(3));
+  const s = 100 / span;
+  const cx = bx + bw / 2;
+  const cy = by + bh / 2;
+  return `scale(${n(s)}) translate(${n(-cx)} ${n(-cy)})`;
 }
