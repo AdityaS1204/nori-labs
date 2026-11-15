@@ -24,7 +24,7 @@ import ControlPanel from "@/components/controls/ControlPanel";
 import FaceControls from "./FaceControls";
 import StatePicker from "./StatePicker";
 import SavePresetDialog, { type SavePresetMeta } from "./SavePresetDialog";
-import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
+import NoriFaceLive, { type GazeMode } from "@/components/robot-face/NoriFaceLive";
 
 interface ExpressionEditorProps {
   /** Opens an existing preset for remixing; defaults to a fresh draft. */
@@ -49,6 +49,18 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
   );
   const [linked, setLinked] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  // Eye-movement preview mode (not part of the saved face).
+  const [gazeMode, setGazeMode] = useState<GazeMode>("off");
+  const [lastGaze, setLastGaze] = useState<Exclude<GazeMode, "off">>("cursor");
+  const toggleGaze = useCallback(
+    (on: boolean) => setGazeMode(on ? lastGaze : "off"),
+    [lastGaze],
+  );
+  const changeGazeMode = useCallback((mode: Exclude<GazeMode, "off">) => {
+    setLastGaze(mode);
+    setGazeMode(mode);
+  }, []);
 
   const [saveOpen, setSaveOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -265,6 +277,10 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
             onEyeChange={onEyeChange}
             onToggleBrows={onToggleBrows}
             onBrowChange={onBrowChange}
+            gazeEnabled={gazeMode !== "off"}
+            gazeMode={gazeMode === "off" ? lastGaze : gazeMode}
+            onToggleGaze={toggleGaze}
+            onGazeModeChange={changeGazeMode}
           />
         </ControlPanel>
       </aside>
@@ -283,7 +299,11 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
           </span>
         </div>
         <div className="min-h-0 flex-1 bg-black p-4">
-          <NoriFaceLive face={active.face} className="h-full w-full" />
+          <NoriFaceLive
+            face={active.face}
+            gazeMode={gazeMode}
+            className="h-full w-full"
+          />
         </div>
       </main>
 
