@@ -76,7 +76,9 @@ export default function ExpressionGrid({ presets }: ExpressionGridProps) {
     }, grid);
 
     return () => ctx.revert();
-  }, [visible]);
+    // Play on mount and on deliberate filter/sort changes only — NOT on `query`,
+    // so typing in search narrows the grid instantly without re-staggering.
+  }, [category, sort]);
 
   const resetFilters = () => {
     setQuery("");
