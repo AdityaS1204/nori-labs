@@ -19,7 +19,9 @@ import {
   type GlobalFieldKey,
 } from "./faceFields";
 import type { GazeMode } from "@/components/robot-face/NoriFaceLive";
-import { normalizeCustomSvg } from "./customSvg";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { InformationCircleIcon } from "@hugeicons/core-free-icons";
+import { parseCustomSvg } from "./customSvg";
 import NumberSlider from "@/components/controls/NumberSlider";
 import ColorField from "@/components/controls/ColorField";
 import Toggle from "@/components/controls/Toggle";
@@ -34,12 +36,11 @@ interface FaceControlsProps {
   onColorChange: (value: string) => void;
   onEyeChange: (side: EyeSide, key: EyeFieldKey, value: number) => void;
   onEyeShapeChange: (side: EyeSide, shape: EyeShape) => void;
-  onEyeCustomPathChange: (
+  onEyeCustomSvgChange: (
     side: EyeSide,
-    path: string,
+    svg: string,
     viewBox?: [number, number, number, number],
   ) => void;
-  onEyeCustomStrokeChange: (side: EyeSide, stroke: boolean) => void;
   onToggleBrows: (value: boolean) => void;
   onBrowChange: (side: EyeSide, key: BrowFieldKey, value: number) => void;
   /** Eye-movement preview (not part of the saved face). */
@@ -156,30 +157,53 @@ function ShapePicker({
 }
 
 /**
- * Paste-anything SVG field: accepts a full `<svg>`, a shape tag, or a bare
- * path `d`, and reports the cleaned geometry + its measured box (for auto-fit).
+ * Paste-your-SVG field: accepts a full `<svg>`, a shape tag, or a bare path `d`.
+ * The markup is kept verbatim (rendered exactly) — only its coordinate box is
+ * read so the renderer can size it into the eye.
  */
-function CustomPathInput({
+function CustomSvgInput({
   value,
   onChange,
 }: {
   value: string | undefined;
-  onChange: (path: string, viewBox?: [number, number, number, number]) => void;
+  onChange: (svg: string, viewBox?: [number, number, number, number]) => void;
 }) {
   return (
-    <div className={`${ROW_BASE} flex min-h-11 items-center px-3.5 py-2`}>
-      <textarea
-        value={value ?? ""}
-        onChange={(e) => {
-          const norm = normalizeCustomSvg(e.target.value);
-          onChange(norm.d || e.target.value, norm.viewBox);
-        }}
-        placeholder="Paste an SVG, a <path>, or a path d — it auto-fits"
-        spellCheck={false}
-        rows={2}
-        aria-label="Custom eye SVG"
-        className="w-full resize-none bg-transparent font-mono text-[12px] leading-snug text-white/85 placeholder:text-white/30 focus:outline-none"
-      />
+    <div className="flex flex-col gap-1.5">
+      <div className="group relative flex items-center gap-1 px-1">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">
+          Custom SVG
+        </span>
+        <span
+          className="flex text-white/35 transition-colors group-hover:text-white/70"
+          tabIndex={0}
+          aria-label="About custom SVG parameters"
+        >
+          <HugeiconsIcon icon={InformationCircleIcon} size={13} color="currentColor" />
+        </span>
+        <span
+          role="tooltip"
+          className="pointer-events-none absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-white/[0.1] bg-[#232326] px-2.5 py-2 text-[11px] leading-snug text-white/75 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.55)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+        >
+          A custom SVG renders exactly as pasted. Width, height, tilt and openness
+          still apply, but some parameters — corner radius, weight and eye colour —
+          won’t affect it.
+        </span>
+      </div>
+      <div className={`${ROW_BASE} flex min-h-11 items-center px-3.5 py-2`}>
+        <textarea
+          value={value ?? ""}
+          onChange={(e) => {
+            const parsed = parseCustomSvg(e.target.value);
+            onChange(e.target.value, parsed.viewBox);
+          }}
+          placeholder="Paste your SVG — it renders exactly, sized by the sliders"
+          spellCheck={false}
+          rows={3}
+          aria-label="Custom eye SVG"
+          className="w-full resize-none bg-transparent font-mono text-[12px] leading-snug text-white/85 placeholder:text-white/30 focus:outline-none"
+        />
+      </div>
     </div>
   );
 }
@@ -190,34 +214,19 @@ function EyeGroup({
   onEyeChange,
   onShape,
   onCustom,
-  onCustomStroke,
 }: {
   eye: NoriEyeParams;
   onEyeChange: (key: EyeFieldKey, value: number) => void;
   onShape: (shape: EyeShape) => void;
-  onCustom: (path: string, viewBox?: [number, number, number, number]) => void;
-  onCustomStroke: (stroke: boolean) => void;
+  onCustom: (svg: string, viewBox?: [number, number, number, number]) => void;
 }) {
   const shape = eye.shape ?? "bar";
   const isCustom = shape === "custom";
-  const strokeWeightShown =
-    eyeRenderMode(shape) === "stroke" || (isCustom && !!eye.customStroke);
+  const strokeWeightShown = eyeRenderMode(shape) === "stroke";
   return (
     <>
       <ShapePicker shape={shape} onPick={onShape} />
-      {isCustom && (
-        <>
-          <CustomPathInput value={eye.customPath} onChange={onCustom} />
-          <FieldRow>
-            <span className="text-[13px] text-white/80">Outline</span>
-            <Toggle
-              label="Draw the custom shape as an outline"
-              checked={!!eye.customStroke}
-              onChange={onCustomStroke}
-            />
-          </FieldRow>
-        </>
-      )}
+      {isCustom && <CustomSvgInput value={eye.customSvg} onChange={onCustom} />}
       <EyeSliders eye={eye} onChange={onEyeChange} />
       {strokeWeightShown && (
         <NumberSlider
@@ -246,8 +255,7 @@ export default function FaceControls({
   onColorChange,
   onEyeChange,
   onEyeShapeChange,
-  onEyeCustomPathChange,
-  onEyeCustomStrokeChange,
+  onEyeCustomSvgChange,
   onToggleBrows,
   onBrowChange,
   gazeEnabled,
@@ -284,8 +292,7 @@ export default function FaceControls({
             eye={face.left}
             onEyeChange={(key, value) => onEyeChange("both", key, value)}
             onShape={(shape) => onEyeShapeChange("both", shape)}
-            onCustom={(path, vb) => onEyeCustomPathChange("both", path, vb)}
-            onCustomStroke={(v) => onEyeCustomStrokeChange("both", v)}
+            onCustom={(svg, vb) => onEyeCustomSvgChange("both", svg, vb)}
           />
         ) : (
           <>
@@ -294,16 +301,14 @@ export default function FaceControls({
               eye={face.left}
               onEyeChange={(key, value) => onEyeChange("left", key, value)}
               onShape={(shape) => onEyeShapeChange("left", shape)}
-              onCustom={(path, vb) => onEyeCustomPathChange("left", path, vb)}
-              onCustomStroke={(v) => onEyeCustomStrokeChange("left", v)}
+              onCustom={(svg, vb) => onEyeCustomSvgChange("left", svg, vb)}
             />
             <EyeGroupLabel>Right</EyeGroupLabel>
             <EyeGroup
               eye={face.right}
               onEyeChange={(key, value) => onEyeChange("right", key, value)}
               onShape={(shape) => onEyeShapeChange("right", shape)}
-              onCustom={(path, vb) => onEyeCustomPathChange("right", path, vb)}
-              onCustomStroke={(v) => onEyeCustomStrokeChange("right", v)}
+              onCustom={(svg, vb) => onEyeCustomSvgChange("right", svg, vb)}
             />
           </>
         )}
