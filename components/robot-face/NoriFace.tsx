@@ -3,13 +3,13 @@ import {
   browCenterY,
   buildBrowPath,
   buildEyePath,
-  customFitTransform,
   eyeRenderMode,
   isDirectional,
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
 } from "@/lib/nori-face";
+import CustomSvgEye from "./CustomSvgEye";
 
 /**
  * Renders the Nori robot's on-screen face as a single SVG: two glowing,
@@ -64,18 +64,31 @@ function Eye({
     );
   }
 
-  const isCustom = shape === "custom";
-  const stroke = isCustom ? !!eye.customStroke : eyeRenderMode(shape) === "stroke";
+  if (shape === "custom") {
+    const openH = Math.max(eye.height * eye.openness, 2);
+    return (
+      <g transform={eye.tilt ? `rotate(${eye.tilt} ${cx} ${cy})` : undefined}>
+        <CustomSvgEye
+          svg={eye.customSvg}
+          viewBox={eye.customViewBox}
+          x={cx - eye.width / 2}
+          y={cy - openH / 2}
+          width={eye.width}
+          height={openH}
+        />
+      </g>
+    );
+  }
+
+  const stroke = eyeRenderMode(shape) === "stroke";
   const mirror = side === "right" && isDirectional(shape) ? -1 : 1;
-  // Openness squashes vertically; custom paths also auto-fit + scale to width×height.
-  const sx = isCustom ? eye.width / 100 : 1;
-  const sy = (isCustom ? eye.height / 100 : 1) * Math.max(eye.openness, 0.04);
-  const fit = isCustom ? customFitTransform(eye.customViewBox) : "";
+  // Openness squashes vertically.
+  const sy = Math.max(eye.openness, 0.04);
 
   return (
     <path
       d={buildEyePath(eye)}
-      transform={`translate(${cx} ${cy}) rotate(${eye.tilt}) scale(${mirror * sx} ${sy}) ${fit}`.trim()}
+      transform={`translate(${cx} ${cy}) rotate(${eye.tilt}) scale(${mirror} ${sy})`.trim()}
       fill={stroke ? "none" : color}
       stroke={stroke ? color : undefined}
       strokeWidth={stroke ? eye.thickness : undefined}
