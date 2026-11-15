@@ -7,7 +7,7 @@
  */
 
 /** The eye's silhouette. `bar` is the default rounded rectangle. */
-export type EyeShape = "bar" | "arc" | "bracket" | "angle" | "custom";
+export type EyeShape = "bar" | "circle" | "oval" | "arc" | "angle" | "custom";
 
 export interface NoriEyeParams {
   /** Eye width in viewBox units. */
@@ -26,11 +26,16 @@ export interface NoriEyeParams {
   shape: EyeShape;
   /** Stroke weight for line-like shapes (arc / bracket / angle). */
   thickness: number;
-  /** Custom path geometry (`shape === "custom"`), a bare `d`. */
-  customPath?: string;
-  /** Measured [x, y, w, h] of `customPath`, used to auto-fit it into the eye. */
+  /**
+   * Custom eye (`shape === "custom"`): the pasted SVG markup, rendered exactly
+   * (its own paths, fills and gradients), sized/posed by the eye params.
+   */
+  customSvg?: string;
+  /** The custom SVG's coordinate box [x, y, w, h] (its viewBox), for sizing. */
   customViewBox?: [number, number, number, number];
-  /** Draw the custom path as an outline (stroke) instead of a fill. */
+  /** @deprecated earlier auto-fit path mode; kept for back-compat on load. */
+  customPath?: string;
+  /** @deprecated earlier custom-path outline flag. */
   customStroke?: boolean;
 }
 
@@ -168,8 +173,9 @@ export interface EyeShapeDef {
 /** The curated eye shapes offered in the picker (plus `custom`). */
 export const EYE_SHAPES: EyeShapeDef[] = [
   { id: "bar", label: "Bar", mode: "fill", directional: false, glyph: "M10 5 h4 a2 2 0 0 1 2 2 v10 a2 2 0 0 1 -2 2 h-4 a2 2 0 0 1 -2 -2 v-10 a2 2 0 0 1 2 -2 Z" },
+  { id: "circle", label: "Circle", mode: "fill", directional: false, glyph: "M5 12 a7 7 0 1 0 14 0 a7 7 0 1 0 -14 0 Z" },
+  { id: "oval", label: "Oval", mode: "fill", directional: false, glyph: "M4 12 a8 6 0 1 0 16 0 a8 6 0 1 0 -16 0 Z" },
   { id: "arc", label: "Arc", mode: "stroke", directional: false, glyph: "M5 15 Q12 6 19 15" },
-  { id: "bracket", label: "Bracket", mode: "stroke", directional: true, glyph: "M15 5 Q8 12 15 19" },
   { id: "angle", label: "Angle", mode: "stroke", directional: true, glyph: "M9 5 L16 12 L9 19" },
   { id: "custom", label: "Custom", mode: "fill", directional: true, glyph: "M6 6 H18 V18 H6 Z" },
 ];
@@ -195,14 +201,17 @@ export function buildEyePath(
   const n = (v: number) => Number(v.toFixed(2));
 
   switch (eye.shape) {
+    case "circle": {
+      // A round eye, sized by the smaller half-axis so it stays circular.
+      const r = Math.min(hw, hh);
+      return `M ${n(-r)} 0 a ${n(r)} ${n(r)} 0 1 0 ${n(2 * r)} 0 a ${n(r)} ${n(r)} 0 1 0 ${n(-2 * r)} 0 Z`;
+    }
+    case "oval":
+      // A full width×height ellipse.
+      return `M ${n(-hw)} 0 a ${n(hw)} ${n(hh)} 0 1 0 ${n(2 * hw)} 0 a ${n(hw)} ${n(hh)} 0 1 0 ${n(-2 * hw)} 0 Z`;
     case "arc":
       // Gentle upward dome ◠ (happy / content).
       return `M ${n(-hw)} ${n(hh * 0.55)} Q 0 ${n(-hh * 1.1)} ${n(hw)} ${n(hh * 0.55)}`;
-    case "bracket": {
-      // Left-bowing "(" ; the right eye mirrors to ")".
-      const bx = hw * 0.35;
-      return `M ${n(bx)} ${n(-hh)} Q ${n(-hw)} 0 ${n(bx)} ${n(hh)}`;
-    }
     case "angle": {
       // ">" pointing inward on the left eye; the right mirrors to "<".
       const bx = -hw * 0.5;
@@ -216,22 +225,3 @@ export function buildEyePath(
   }
 }
 
-/**
- * Transform that normalises a custom path (measured `viewBox`) into a centred
- * 100-unit box, preserving aspect ratio. Composed before the eye's own
- * size/placement transform, so any coordinate system "just fits". Returns ""
- * (identity) when there's nothing to fit.
- */
-export function customFitTransform(
-  viewBox: [number, number, number, number] | undefined,
-): string {
-  if (!viewBox) return "";
-  const [bx, by, bw, bh] = viewBox;
-  const span = Math.max(bw, bh);
-  if (!span || !Number.isFinite(span)) return "";
-  const n = (v: number) => Number(v.toFixed(3));
-  const s = 100 / span;
-  const cx = bx + bw / 2;
-  const cy = by + bh / 2;
-  return `scale(${n(s)}) translate(${n(-cx)} ${n(-cy)})`;
-}
