@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
 
@@ -21,6 +22,14 @@ interface SavePresetDialogProps {
   onSubmit: (meta: SavePresetMeta) => void;
   submitting: boolean;
   error: string | null;
+  /**
+   * True when the preset was opened from the library (a remix). Saving always
+   * creates a *new* preset — never edits the original — so in this mode the
+   * author fields start blank (the remixer enters their own name) and the title
+   * is seeded as a remix, so a remix is never published under the original
+   * maker's name.
+   */
+  isRemix?: boolean;
 }
 
 /** Modal that captures preset metadata and publishes the bundle to the library. */
@@ -30,12 +39,20 @@ export default function SavePresetDialog({
   onSubmit,
   submitting,
   error,
+  isRemix = false,
 }: SavePresetDialogProps) {
-  const [name, setName] = useState(preset.name);
+  const [name, setName] = useState(
+    isRemix && preset.name ? `${preset.name} (remix)` : preset.name,
+  );
   const [description, setDescription] = useState(preset.description);
-  const [authorName, setAuthorName] = useState(preset.author.name);
-  const [authorHandle, setAuthorHandle] = useState(preset.author.handle ?? "");
+  // A remix is the remixer's own preset — don't inherit the original author.
+  const [authorName, setAuthorName] = useState(isRemix ? "" : preset.author.name);
+  const [authorHandle, setAuthorHandle] = useState(
+    isRemix ? "" : preset.author.handle ?? "",
+  );
   const [category, setCategory] = useState(preset.category ?? "");
+  const reduce = useReducedMotion();
+  const EASE = [0.23, 1, 0.32, 1] as const;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -71,15 +88,27 @@ export default function SavePresetDialog({
       aria-modal="true"
       aria-label="Save preset"
     >
-      <div
+      <motion.div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={() => !submitting && onClose()}
         aria-hidden="true"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.18, ease: EASE }}
       />
 
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1a1a1c] shadow-[0_24px_70px_rgba(0,0,0,0.6)]">
+      <motion.div
+        className="relative z-10 flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1a1a1c] shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
+        initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 6 }}
+        transition={{ duration: 0.22, ease: EASE }}
+      >
         <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
-          <h2 className="text-[16px] font-semibold text-white">Save to library</h2>
+          <h2 className="text-[16px] font-semibold text-white">
+            {isRemix ? "Save your remix" : "Save to library"}
+          </h2>
           <button
             type="button"
             onClick={() => !submitting && onClose()}
@@ -91,6 +120,15 @@ export default function SavePresetDialog({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]">
+          {isRemix && (
+            <p className="mb-4 rounded-lg border border-[#E8BE3C]/20 bg-[#E8BE3C]/[0.06] px-3 py-2 text-[12px] leading-relaxed text-white/60">
+              This saves a <span className="text-white/85">new preset under your name</span>.
+              {preset.author.name
+                ? ` The original by ${preset.author.name} stays unchanged.`
+                : " The original preset stays unchanged."}
+            </p>
+          )}
+
           {/* State previews */}
           <p className={labelCls}>
             {preset.states.length}{" "}
@@ -211,7 +249,7 @@ export default function SavePresetDialog({
             {submitting ? "Saving…" : "Save to library"}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>,
     document.body,
   );
