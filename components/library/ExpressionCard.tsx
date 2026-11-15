@@ -1,88 +1,71 @@
 import Link from "next/link";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  FavouriteIcon,
-  LayersLogoIcon,
-  ArrowRight01Icon,
-} from "@hugeicons/core-free-icons";
 
-import { formatCount, coverState, type Preset } from "@/lib/presets";
-import NoriFace from "@/components/robot-face/NoriFace";
-import CategoryTag from "./CategoryTag";
-import AuthorBadge from "./AuthorBadge";
-import StatItem from "./StatItem";
+import { coverState, initials, type Preset } from "@/lib/presets";
+import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
 
 interface ExpressionCardProps {
   preset: Preset;
 }
 
 /**
- * A single preset in the library grid. The whole card is a link that opens the
- * preset (all its states) in the playground (`/lab/[id]`). The thumbnail shows
- * the preset's cover state rendered in the real robot face model.
+ * A single preset in the library grid — a simple, screen-like tile. The cover
+ * state renders as a *live* preview (the eyes glance around on their own), and
+ * the creator's identity stays hidden until the card is hovered. The whole
+ * card links into the playground (`/lab/[id]`).
  */
 export default function ExpressionCard({ preset }: ExpressionCardProps) {
-  const { id, name, description, category, accent, author, likes, states } = preset;
+  const { id, name, accent, author } = preset;
   const cover = coverState(preset);
 
   return (
     <Link
       href={`/lab/${id}`}
-      aria-label={`Open ${name} in the expression playground`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03] no-underline transition-[transform,border-color,background-color] duration-200 hover:-translate-y-1 hover:border-white/[0.14] hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8BE3C]/60 motion-safe:active:scale-[0.99]"
+      aria-label={`Open ${name || "Untitled preset"} in the expression playground`}
+      className="group relative block overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#0b0b0c] shadow-[0_6px_20px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.04)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1.5 hover:border-white/[0.16] hover:shadow-[0_20px_46px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8BE3C]/60 motion-safe:active:scale-[0.99]"
     >
-      {/* ── Preview (robot screen) ── */}
-      <div className="relative flex h-[180px] items-center justify-center overflow-hidden border-b border-white/[0.06] bg-[#060607]">
-        {/* accent glow */}
+      {/* ── Live preview (the robot screen) ── */}
+      <div className="relative aspect-[4/3] w-full">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-50 transition-opacity duration-200 group-hover:opacity-80"
+          className="pointer-events-none absolute inset-0 opacity-60 transition-opacity duration-300 group-hover:opacity-90"
           style={{
-            background: `radial-gradient(140px 120px at 50% 50%, ${accent}26, transparent 70%)`,
+            background: `radial-gradient(150px 120px at 50% 46%, ${accent}26, transparent 70%)`,
           }}
         />
-        <NoriFace
+        <NoriFaceLive
           face={cover.face}
-          width={210}
-          className="relative transition-transform duration-300 ease-out group-hover:scale-[1.06]"
+          gazeMode="random"
+          className="absolute inset-0 h-full w-full p-5"
         />
 
-        {category && (
-          <span className="absolute left-3 top-3">
-            <CategoryTag category={category} accent={accent} />
+        {/* bottom scrim for label legibility */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 via-black/25 to-transparent"
+        />
+      </div>
+
+      {/* ── Overlay: name (always) + author (on hover) ── */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
+        <span className="max-w-[58%] truncate rounded-full border border-white/[0.08] bg-[#141416]/80 px-3 py-1.5 text-[12px] font-medium text-white/85 backdrop-blur-sm">
+          {name || "Untitled preset"}
+        </span>
+
+        <div className="flex items-center gap-2">
+          <span className="min-w-0 translate-x-1 text-right text-[11px] leading-tight opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100">
+            <span className="block truncate font-medium text-white/85">
+              {author.name}
+            </span>
+            {author.handle && (
+              <span className="block truncate text-white/45">@{author.handle}</span>
+            )}
           </span>
-        )}
-
-        {/* state-count badge */}
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#0d0d0e]/80 px-2 py-0.5 text-[10px] font-medium tracking-[0.03em] text-white/70 backdrop-blur-sm">
-          <HugeiconsIcon icon={LayersLogoIcon} size={11} color="currentColor" />
-          {states.length} {states.length === 1 ? "state" : "states"}
-        </span>
-
-        {/* open affordance on hover */}
-        <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-[#0d0d0e]/80 px-2.5 py-1 text-[10px] font-medium tracking-[0.04em] text-white/70 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100">
-          Open
-          <HugeiconsIcon icon={ArrowRight01Icon} size={12} color="currentColor" />
-        </span>
-      </div>
-
-      {/* ── Body ── */}
-      <div className="flex flex-1 flex-col gap-1 p-4">
-        <h3 className="text-[15px] font-semibold tracking-[0.01em] text-white/90">
-          {name}
-        </h3>
-        {description && (
-          <p className="line-clamp-2 text-[12px] leading-relaxed text-white/45">
-            {description}
-          </p>
-        )}
-      </div>
-
-      {/* ── Footer ── */}
-      <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] px-4 py-3">
-        <AuthorBadge author={author} />
-        <div className="flex flex-shrink-0 items-center gap-3">
-          <StatItem icon={FavouriteIcon} value={formatCount(likes)} label="likes" />
+          <span
+            className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-full border border-white/[0.14] bg-white/[0.08] text-[11px] font-semibold text-white/75"
+            aria-hidden="true"
+          >
+            {initials(author.name)}
+          </span>
         </div>
       </div>
     </Link>
