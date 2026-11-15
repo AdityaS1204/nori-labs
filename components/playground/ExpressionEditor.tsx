@@ -2,10 +2,11 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { RefreshIcon, Copy01Icon, Tick02Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
 
-import { type NoriFaceParams } from "@/lib/nori-face";
+import { type EyeShape, type NoriFaceParams } from "@/lib/nori-face";
 import {
   clonePreset,
   coverState,
@@ -102,6 +103,40 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
       })),
     [patchFace],
   );
+  const onEyeShapeChange = useCallback(
+    (side: EyeSide, shape: EyeShape) =>
+      patchFace((f) => ({
+        ...f,
+        left: side === "right" ? f.left : { ...f.left, shape },
+        right: side === "left" ? f.right : { ...f.right, shape },
+      })),
+    [patchFace],
+  );
+  const onEyeCustomPathChange = useCallback(
+    (
+      side: EyeSide,
+      customPath: string,
+      customViewBox?: [number, number, number, number],
+    ) =>
+      patchFace((f) => ({
+        ...f,
+        left:
+          side === "right" ? f.left : { ...f.left, customPath, customViewBox },
+        right:
+          side === "left" ? f.right : { ...f.right, customPath, customViewBox },
+      })),
+    [patchFace],
+  );
+  const onEyeCustomStrokeChange = useCallback(
+    (side: EyeSide, customStroke: boolean) =>
+      patchFace((f) => ({
+        ...f,
+        left: side === "right" ? f.left : { ...f.left, customStroke },
+        right: side === "left" ? f.right : { ...f.right, customStroke },
+      })),
+    [patchFace],
+  );
+
   const onToggleBrows = useCallback(
     (value: boolean) => patchFace((f) => ({ ...f, browsEnabled: value })),
     [patchFace],
@@ -275,6 +310,9 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
             onGlobalChange={onGlobalChange}
             onColorChange={onColorChange}
             onEyeChange={onEyeChange}
+            onEyeShapeChange={onEyeShapeChange}
+            onEyeCustomPathChange={onEyeCustomPathChange}
+            onEyeCustomStrokeChange={onEyeCustomStrokeChange}
             onToggleBrows={onToggleBrows}
             onBrowChange={onBrowChange}
             gazeEnabled={gazeMode !== "off"}
@@ -307,15 +345,17 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
         </div>
       </main>
 
-      {saveOpen && (
-        <SavePresetDialog
-          preset={preset}
-          onClose={() => setSaveOpen(false)}
-          onSubmit={handleSubmit}
-          submitting={saving}
-          error={saveError}
-        />
-      )}
+      <AnimatePresence>
+        {saveOpen && (
+          <SavePresetDialog
+            preset={preset}
+            onClose={() => setSaveOpen(false)}
+            onSubmit={handleSubmit}
+            submitting={saving}
+            error={saveError}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
