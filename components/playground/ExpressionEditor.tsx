@@ -112,27 +112,16 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
       })),
     [patchFace],
   );
-  const onEyeCustomPathChange = useCallback(
+  const onEyeCustomSvgChange = useCallback(
     (
       side: EyeSide,
-      customPath: string,
+      customSvg: string,
       customViewBox?: [number, number, number, number],
     ) =>
       patchFace((f) => ({
         ...f,
-        left:
-          side === "right" ? f.left : { ...f.left, customPath, customViewBox },
-        right:
-          side === "left" ? f.right : { ...f.right, customPath, customViewBox },
-      })),
-    [patchFace],
-  );
-  const onEyeCustomStrokeChange = useCallback(
-    (side: EyeSide, customStroke: boolean) =>
-      patchFace((f) => ({
-        ...f,
-        left: side === "right" ? f.left : { ...f.left, customStroke },
-        right: side === "left" ? f.right : { ...f.right, customStroke },
+        left: side === "right" ? f.left : { ...f.left, customSvg, customViewBox },
+        right: side === "left" ? f.right : { ...f.right, customSvg, customViewBox },
       })),
     [patchFace],
   );
@@ -311,8 +300,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
             onColorChange={onColorChange}
             onEyeChange={onEyeChange}
             onEyeShapeChange={onEyeShapeChange}
-            onEyeCustomPathChange={onEyeCustomPathChange}
-            onEyeCustomStrokeChange={onEyeCustomStrokeChange}
+            onEyeCustomSvgChange={onEyeCustomSvgChange}
             onToggleBrows={onToggleBrows}
             onBrowChange={onBrowChange}
             gazeEnabled={gazeMode !== "off"}
@@ -353,6 +341,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
             onSubmit={handleSubmit}
             submitting={saving}
             error={saveError}
+            isRemix={Boolean(initialPreset)}
           />
         )}
       </AnimatePresence>
