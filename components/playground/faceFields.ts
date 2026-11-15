@@ -9,7 +9,7 @@ export type EyeSide = "left" | "right" | "both";
 
 export type EyeFieldKey = keyof Pick<
   NoriEyeParams,
-  "width" | "height" | "radius" | "openness" | "tilt" | "offsetY"
+  "width" | "height" | "radius" | "openness" | "tilt" | "offsetY" | "thickness"
 >;
 
 export type BrowFieldKey = keyof Pick<
@@ -40,6 +40,15 @@ export const EYE_FIELDS: FieldDef<EyeFieldKey>[] = [
   { key: "tilt", label: "Tilt", min: -45, max: 45, step: 1, unit: "°" },
   { key: "offsetY", label: "Vertical offset", min: -60, max: 60, step: 1 },
 ];
+
+/** Stroke weight — shown only for line-like eye shapes (arc/bracket/angle). */
+export const EYE_THICKNESS_FIELD: FieldDef<"thickness"> = {
+  key: "thickness",
+  label: "Weight",
+  min: 4,
+  max: 40,
+  step: 1,
+};
 
 /** Per-eyebrow editable fields. */
 export const BROW_FIELDS: FieldDef<BrowFieldKey>[] = [
