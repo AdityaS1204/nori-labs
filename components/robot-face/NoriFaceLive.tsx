@@ -14,6 +14,10 @@ import {
   FACE_VIEWBOX,
   browCenterY,
   buildBrowPath,
+  buildEyePath,
+  customFitTransform,
+  eyeRenderMode,
+  isDirectional,
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
@@ -177,15 +181,18 @@ function LiveEye({
   cx,
   color,
   blink,
+  side,
 }: {
   eye: NoriEyeParams;
   cx: number;
   color: string;
   blink: MotionValue<number>;
+  side: "left" | "right";
 }) {
   const w = eye.width;
   const h = eye.height;
   const r = clampRadius(eye);
+  const shape = eye.shape ?? "bar";
 
   return (
     // Outer group: involuntary blink (shared scaleY), about the eye centre.
@@ -204,20 +211,55 @@ function LiveEye({
         }}
         transition={spring}
       >
-        <motion.rect
-          initial={false}
-          animate={{
-            x: CX - w / 2,
-            y: CY - h / 2,
-            width: w,
-            height: h,
-            rx: r,
-            fill: color,
-          }}
-          transition={spring}
-        />
+        {shape === "bar" ? (
+          <motion.rect
+            initial={false}
+            animate={{
+              x: CX - w / 2,
+              y: CY - h / 2,
+              width: w,
+              height: h,
+              rx: r,
+              fill: color,
+            }}
+            transition={spring}
+          />
+        ) : (
+          <EyePath eye={eye} color={color} side={side} />
+        )}
       </motion.g>
     </motion.g>
+  );
+}
+
+/** Non-`bar` eyes: a path (filled or stroked), mirrored on the right. */
+function EyePath({
+  eye,
+  color,
+  side,
+}: {
+  eye: NoriEyeParams;
+  color: string;
+  side: "left" | "right";
+}) {
+  const isCustom = eye.shape === "custom";
+  const stroke = isCustom ? !!eye.customStroke : eyeRenderMode(eye.shape) === "stroke";
+  const mirror = side === "right" && isDirectional(eye.shape) ? -1 : 1;
+  // Custom paths normalise to a 100-unit box (auto-fit), then scale to width×height.
+  const sx = isCustom ? eye.width / 100 : 1;
+  const sy = isCustom ? eye.height / 100 : 1;
+  const fit = isCustom ? customFitTransform(eye.customViewBox) : "";
+
+  return (
+    <path
+      d={buildEyePath(eye)}
+      transform={`translate(${CX} ${CY}) scale(${mirror * sx} ${sy}) ${fit}`.trim()}
+      fill={stroke ? "none" : color}
+      stroke={stroke ? color : undefined}
+      strokeWidth={stroke ? eye.thickness : undefined}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   );
 }
 
@@ -279,8 +321,8 @@ export default function NoriFaceLive({
       <g style={{ filter: glowFilter }}>
         {/* Gaze: shifts the eyes (and brows) toward where they're looking. */}
         <motion.g style={{ x: gazeX, y: gazeY }}>
-          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} />
-          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} />
+          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} side="left" />
+          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} side="right" />
           {browsEnabled && (
             <>
               <LiveBrow
