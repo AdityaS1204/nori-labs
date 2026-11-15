@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
 
@@ -93,13 +96,19 @@ export default function LibraryToolbar({
                 aria-selected={active}
                 onClick={() => onCategoryChange(filter)}
                 className={[
-                  "flex-shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-medium tracking-[0.02em] transition-[color,background-color,border-color] duration-150",
-                  "border",
+                  "relative flex-shrink-0 rounded-full px-3.5 py-1.5 text-[12px] font-medium tracking-[0.02em] transition-colors duration-150",
                   active
-                    ? "border-[#E8BE3C]/30 bg-[#E8BE3C]/15 text-[#E8BE3C]"
-                    : "border-white/[0.07] bg-white/[0.02] text-white/45 hover:border-white/[0.12] hover:text-white/75",
+                    ? "text-[#E8BE3C]"
+                    : "text-white/45 hover:text-white/75",
                 ].join(" ")}
               >
+                {active && (
+                  <motion.span
+                    layoutId="category-pill"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="absolute inset-0 -z-10 rounded-full border border-[#E8BE3C]/30 bg-[#E8BE3C]/15"
+                  />
+                )}
                 {filter}
               </button>
             );
