@@ -15,13 +15,13 @@ import {
   browCenterY,
   buildBrowPath,
   buildEyePath,
-  customFitTransform,
   eyeRenderMode,
   isDirectional,
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
 } from "@/lib/nori-face";
+import CustomSvgEye from "./CustomSvgEye";
 
 /**
  * Motion-animated version of the Nori face used by the playground. Every
@@ -224,6 +224,15 @@ function LiveEye({
             }}
             transition={spring}
           />
+        ) : shape === "custom" ? (
+          <CustomSvgEye
+            svg={eye.customSvg}
+            viewBox={eye.customViewBox}
+            x={CX - w / 2}
+            y={CY - h / 2}
+            width={w}
+            height={h}
+          />
         ) : (
           <EyePath eye={eye} color={color} side={side} />
         )}
@@ -232,7 +241,7 @@ function LiveEye({
   );
 }
 
-/** Non-`bar` eyes: a path (filled or stroked), mirrored on the right. */
+/** Curated non-`bar` eyes (arc / bracket / angle): a path, mirrored on the right. */
 function EyePath({
   eye,
   color,
@@ -242,18 +251,13 @@ function EyePath({
   color: string;
   side: "left" | "right";
 }) {
-  const isCustom = eye.shape === "custom";
-  const stroke = isCustom ? !!eye.customStroke : eyeRenderMode(eye.shape) === "stroke";
+  const stroke = eyeRenderMode(eye.shape) === "stroke";
   const mirror = side === "right" && isDirectional(eye.shape) ? -1 : 1;
-  // Custom paths normalise to a 100-unit box (auto-fit), then scale to width×height.
-  const sx = isCustom ? eye.width / 100 : 1;
-  const sy = isCustom ? eye.height / 100 : 1;
-  const fit = isCustom ? customFitTransform(eye.customViewBox) : "";
 
   return (
     <path
       d={buildEyePath(eye)}
-      transform={`translate(${CX} ${CY}) scale(${mirror * sx} ${sy}) ${fit}`.trim()}
+      transform={`translate(${CX} ${CY}) scale(${mirror} 1)`}
       fill={stroke ? "none" : color}
       stroke={stroke ? color : undefined}
       strokeWidth={stroke ? eye.thickness : undefined}
