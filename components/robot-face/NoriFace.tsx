@@ -2,6 +2,10 @@ import {
   FACE_VIEWBOX,
   browCenterY,
   buildBrowPath,
+  buildEyePath,
+  customFitTransform,
+  eyeRenderMode,
+  isDirectional,
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
@@ -30,28 +34,53 @@ function Eye({
   eye,
   cx,
   color,
+  side,
 }: {
   eye: NoriEyeParams;
   cx: number;
   color: string;
+  side: "left" | "right";
 }) {
-  const h = Math.max(eye.width * 0.2, eye.height * eye.openness);
   const cy = CENTER_Y + eye.offsetY;
-  const x = cx - eye.width / 2;
-  const y = cy - h / 2;
-  // Clamp the radius so a squinting eye never over-rounds into a lens shape.
-  const r = Math.min(eye.radius, eye.width / 2, h / 2);
+  const shape = eye.shape ?? "bar";
+
+  if (shape === "bar") {
+    const h = Math.max(eye.width * 0.2, eye.height * eye.openness);
+    const x = cx - eye.width / 2;
+    const y = cy - h / 2;
+    // Clamp the radius so a squinting eye never over-rounds into a lens shape.
+    const r = Math.min(eye.radius, eye.width / 2, h / 2);
+    return (
+      <rect
+        x={x}
+        y={y}
+        width={eye.width}
+        height={h}
+        rx={r}
+        ry={r}
+        fill={color}
+        transform={eye.tilt ? `rotate(${eye.tilt} ${cx} ${cy})` : undefined}
+      />
+    );
+  }
+
+  const isCustom = shape === "custom";
+  const stroke = isCustom ? !!eye.customStroke : eyeRenderMode(shape) === "stroke";
+  const mirror = side === "right" && isDirectional(shape) ? -1 : 1;
+  // Openness squashes vertically; custom paths also auto-fit + scale to width×height.
+  const sx = isCustom ? eye.width / 100 : 1;
+  const sy = (isCustom ? eye.height / 100 : 1) * Math.max(eye.openness, 0.04);
+  const fit = isCustom ? customFitTransform(eye.customViewBox) : "";
 
   return (
-    <rect
-      x={x}
-      y={y}
-      width={eye.width}
-      height={h}
-      rx={r}
-      ry={r}
-      fill={color}
-      transform={eye.tilt ? `rotate(${eye.tilt} ${cx} ${cy})` : undefined}
+    <path
+      d={buildEyePath(eye)}
+      transform={`translate(${cx} ${cy}) rotate(${eye.tilt}) scale(${mirror * sx} ${sy}) ${fit}`.trim()}
+      fill={stroke ? "none" : color}
+      stroke={stroke ? color : undefined}
+      strokeWidth={stroke ? eye.thickness : undefined}
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   );
 }
@@ -103,8 +132,8 @@ export default function NoriFace({ face, width = 460, className }: NoriFaceProps
       className={className}
     >
       <g style={{ filter: glowFilter }}>
-        <Eye eye={left} cx={leftX} color={color} />
-        <Eye eye={right} cx={rightX} color={color} />
+        <Eye eye={left} cx={leftX} color={color} side="left" />
+        <Eye eye={right} cx={rightX} color={color} side="right" />
         {browsEnabled && (
           <>
             <Brow brow={leftBrow} eye={left} cx={leftX} color={color} mirror={1} />
