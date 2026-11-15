@@ -1,13 +1,17 @@
 "use client";
 
-import type {
-  NoriBrowParams,
-  NoriEyeParams,
-  NoriFaceParams,
+import {
+  EYE_SHAPES,
+  eyeRenderMode,
+  type EyeShape,
+  type NoriBrowParams,
+  type NoriEyeParams,
+  type NoriFaceParams,
 } from "@/lib/nori-face";
 import {
   BROW_FIELDS,
   EYE_FIELDS,
+  EYE_THICKNESS_FIELD,
   GLOBAL_FIELDS,
   type BrowFieldKey,
   type EyeFieldKey,
@@ -15,6 +19,7 @@ import {
   type GlobalFieldKey,
 } from "./faceFields";
 import type { GazeMode } from "@/components/robot-face/NoriFaceLive";
+import { normalizeCustomSvg } from "./customSvg";
 import NumberSlider from "@/components/controls/NumberSlider";
 import ColorField from "@/components/controls/ColorField";
 import Toggle from "@/components/controls/Toggle";
@@ -28,6 +33,13 @@ interface FaceControlsProps {
   onGlobalChange: (key: GlobalFieldKey, value: number) => void;
   onColorChange: (value: string) => void;
   onEyeChange: (side: EyeSide, key: EyeFieldKey, value: number) => void;
+  onEyeShapeChange: (side: EyeSide, shape: EyeShape) => void;
+  onEyeCustomPathChange: (
+    side: EyeSide,
+    path: string,
+    viewBox?: [number, number, number, number],
+  ) => void;
+  onEyeCustomStrokeChange: (side: EyeSide, stroke: boolean) => void;
   onToggleBrows: (value: boolean) => void;
   onBrowChange: (side: EyeSide, key: BrowFieldKey, value: number) => void;
   /** Eye-movement preview (not part of the saved face). */
@@ -100,6 +112,127 @@ function EyeGroupLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** A row of glyph buttons for choosing the eye silhouette. */
+function ShapePicker({
+  shape,
+  onPick,
+}: {
+  shape: EyeShape;
+  onPick: (shape: EyeShape) => void;
+}) {
+  return (
+    <div className={`${ROW_BASE} flex items-center gap-1 px-2`}>
+      {EYE_SHAPES.map((s) => {
+        const active = s.id === shape;
+        return (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => onPick(s.id)}
+            title={s.label}
+            aria-label={s.label}
+            aria-pressed={active}
+            className={`grid h-8 flex-1 place-items-center rounded-md transition-colors ${
+              active
+                ? "bg-[#E8BE3C]/15 text-[#E8BE3C]"
+                : "text-white/50 hover:bg-white/[0.06] hover:text-white/80"
+            }`}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d={s.glyph}
+                fill={s.mode === "fill" ? "currentColor" : "none"}
+                stroke={s.mode === "stroke" ? "currentColor" : "none"}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Paste-anything SVG field: accepts a full `<svg>`, a shape tag, or a bare
+ * path `d`, and reports the cleaned geometry + its measured box (for auto-fit).
+ */
+function CustomPathInput({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (path: string, viewBox?: [number, number, number, number]) => void;
+}) {
+  return (
+    <div className={`${ROW_BASE} flex min-h-11 items-center px-3.5 py-2`}>
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => {
+          const norm = normalizeCustomSvg(e.target.value);
+          onChange(norm.d || e.target.value, norm.viewBox);
+        }}
+        placeholder="Paste an SVG, a <path>, or a path d — it auto-fits"
+        spellCheck={false}
+        rows={2}
+        aria-label="Custom eye SVG"
+        className="w-full resize-none bg-transparent font-mono text-[12px] leading-snug text-white/85 placeholder:text-white/30 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+/** Shape picker + custom input + geometry sliders + weight, for one eye. */
+function EyeGroup({
+  eye,
+  onEyeChange,
+  onShape,
+  onCustom,
+  onCustomStroke,
+}: {
+  eye: NoriEyeParams;
+  onEyeChange: (key: EyeFieldKey, value: number) => void;
+  onShape: (shape: EyeShape) => void;
+  onCustom: (path: string, viewBox?: [number, number, number, number]) => void;
+  onCustomStroke: (stroke: boolean) => void;
+}) {
+  const shape = eye.shape ?? "bar";
+  const isCustom = shape === "custom";
+  const strokeWeightShown =
+    eyeRenderMode(shape) === "stroke" || (isCustom && !!eye.customStroke);
+  return (
+    <>
+      <ShapePicker shape={shape} onPick={onShape} />
+      {isCustom && (
+        <>
+          <CustomPathInput value={eye.customPath} onChange={onCustom} />
+          <FieldRow>
+            <span className="text-[13px] text-white/80">Outline</span>
+            <Toggle
+              label="Draw the custom shape as an outline"
+              checked={!!eye.customStroke}
+              onChange={onCustomStroke}
+            />
+          </FieldRow>
+        </>
+      )}
+      <EyeSliders eye={eye} onChange={onEyeChange} />
+      {strokeWeightShown && (
+        <NumberSlider
+          label={EYE_THICKNESS_FIELD.label}
+          value={eye.thickness ?? 16}
+          min={EYE_THICKNESS_FIELD.min}
+          max={EYE_THICKNESS_FIELD.max}
+          step={EYE_THICKNESS_FIELD.step}
+          onChange={(v) => onEyeChange("thickness", v)}
+        />
+      )}
+    </>
+  );
+}
+
 /**
  * Face-specific panel body: a Screen group and an Eyes group built from the
  * generic control kit. "Link eyes" edits both together; unlink to pose them
@@ -112,6 +245,9 @@ export default function FaceControls({
   onGlobalChange,
   onColorChange,
   onEyeChange,
+  onEyeShapeChange,
+  onEyeCustomPathChange,
+  onEyeCustomStrokeChange,
   onToggleBrows,
   onBrowChange,
   gazeEnabled,
@@ -144,21 +280,30 @@ export default function FaceControls({
         </FieldRow>
 
         {linked ? (
-          <EyeSliders
+          <EyeGroup
             eye={face.left}
-            onChange={(key, value) => onEyeChange("both", key, value)}
+            onEyeChange={(key, value) => onEyeChange("both", key, value)}
+            onShape={(shape) => onEyeShapeChange("both", shape)}
+            onCustom={(path, vb) => onEyeCustomPathChange("both", path, vb)}
+            onCustomStroke={(v) => onEyeCustomStrokeChange("both", v)}
           />
         ) : (
           <>
             <EyeGroupLabel>Left</EyeGroupLabel>
-            <EyeSliders
+            <EyeGroup
               eye={face.left}
-              onChange={(key, value) => onEyeChange("left", key, value)}
+              onEyeChange={(key, value) => onEyeChange("left", key, value)}
+              onShape={(shape) => onEyeShapeChange("left", shape)}
+              onCustom={(path, vb) => onEyeCustomPathChange("left", path, vb)}
+              onCustomStroke={(v) => onEyeCustomStrokeChange("left", v)}
             />
             <EyeGroupLabel>Right</EyeGroupLabel>
-            <EyeSliders
+            <EyeGroup
               eye={face.right}
-              onChange={(key, value) => onEyeChange("right", key, value)}
+              onEyeChange={(key, value) => onEyeChange("right", key, value)}
+              onShape={(shape) => onEyeShapeChange("right", shape)}
+              onCustom={(path, vb) => onEyeCustomPathChange("right", path, vb)}
+              onCustomStroke={(v) => onEyeCustomStrokeChange("right", v)}
             />
           </>
         )}
