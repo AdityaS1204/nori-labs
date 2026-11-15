@@ -14,10 +14,11 @@ import {
   type EyeSide,
   type GlobalFieldKey,
 } from "./faceFields";
+import type { GazeMode } from "@/components/robot-face/NoriFaceLive";
 import NumberSlider from "@/components/controls/NumberSlider";
 import ColorField from "@/components/controls/ColorField";
 import Toggle from "@/components/controls/Toggle";
-import FieldRow from "@/components/controls/FieldRow";
+import FieldRow, { ROW_BASE } from "@/components/controls/FieldRow";
 import ControlSection from "@/components/controls/ControlSection";
 
 interface FaceControlsProps {
@@ -29,6 +30,12 @@ interface FaceControlsProps {
   onEyeChange: (side: EyeSide, key: EyeFieldKey, value: number) => void;
   onToggleBrows: (value: boolean) => void;
   onBrowChange: (side: EyeSide, key: BrowFieldKey, value: number) => void;
+  /** Eye-movement preview (not part of the saved face). */
+  gazeEnabled: boolean;
+  /** Active mode when enabled: "cursor" or "random". */
+  gazeMode: Exclude<GazeMode, "off">;
+  onToggleGaze: (value: boolean) => void;
+  onGazeModeChange: (mode: Exclude<GazeMode, "off">) => void;
 }
 
 /** The six per-eye sliders for a single eye. */
@@ -107,6 +114,10 @@ export default function FaceControls({
   onEyeChange,
   onToggleBrows,
   onBrowChange,
+  gazeEnabled,
+  gazeMode,
+  onToggleGaze,
+  onGazeModeChange,
 }: FaceControlsProps) {
   return (
     <>
@@ -183,6 +194,41 @@ export default function FaceControls({
               />
             </>
           ))}
+      </ControlSection>
+
+      <ControlSection title="Eye movement" defaultOpen={false}>
+        <FieldRow>
+          <span className="text-[13px] text-white/80">Track eyes</span>
+          <Toggle label="Eye movement" checked={gazeEnabled} onChange={onToggleGaze} />
+        </FieldRow>
+
+        {gazeEnabled && (
+          <div className={`${ROW_BASE} flex items-center justify-between gap-2 px-3.5`}>
+            <button
+              type="button"
+              onClick={() => onGazeModeChange("cursor")}
+              className={`text-[13px] transition-colors ${
+                gazeMode === "cursor" ? "text-white" : "text-white/40 hover:text-white/70"
+              }`}
+            >
+              Follow cursor
+            </button>
+            <Toggle
+              label="Switch between follow-cursor and random eye movement"
+              checked={gazeMode === "random"}
+              onChange={(v) => onGazeModeChange(v ? "random" : "cursor")}
+            />
+            <button
+              type="button"
+              onClick={() => onGazeModeChange("random")}
+              className={`text-[13px] transition-colors ${
+                gazeMode === "random" ? "text-white" : "text-white/40 hover:text-white/70"
+              }`}
+            >
+              Random
+            </button>
+          </div>
+        )}
       </ControlSection>
     </>
   );
