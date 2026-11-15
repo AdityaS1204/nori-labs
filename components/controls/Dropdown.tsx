@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { motion, useReducedMotion } from "motion/react";
 
 interface DropdownProps {
   /** The trigger the popover is anchored to. */
@@ -32,7 +33,9 @@ export default function Dropdown({
   label,
 }: DropdownProps) {
   const popRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [placement, setPlacement] = useState<"top" | "bottom">("bottom");
 
   useLayoutEffect(() => {
     const a = anchorRef.current;
@@ -42,10 +45,9 @@ export default function Dropdown({
       align === "right"
         ? Math.max(8, Math.min(r.right - width, window.innerWidth - width - 8))
         : Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
-    const top =
-      r.bottom + 8 + EST_HEIGHT > window.innerHeight - 8
-        ? Math.max(8, r.top - EST_HEIGHT - 8)
-        : r.bottom + 8;
+    const flipAbove = r.bottom + 8 + EST_HEIGHT > window.innerHeight - 8;
+    const top = flipAbove ? Math.max(8, r.top - EST_HEIGHT - 8) : r.bottom + 8;
+    setPlacement(flipAbove ? "top" : "bottom");
     setPos({ top, left });
   }, [anchorRef, width, align]);
 
@@ -69,15 +71,25 @@ export default function Dropdown({
   if (!pos) return null;
 
   return createPortal(
-    <div
+    <motion.div
       ref={popRef}
       role="menu"
       aria-label={label}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
       className="fixed z-50 rounded-xl border border-white/[0.08] bg-[#1a1a1c] p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
-      style={{ top: pos.top, left: pos.left, width }}
+      style={{
+        top: pos.top,
+        left: pos.left,
+        width,
+        transformOrigin: `${placement === "bottom" ? "top" : "bottom"} ${
+          align === "right" ? "right" : "left"
+        }`,
+      }}
     >
       {children}
-    </div>,
+    </motion.div>,
     document.body,
   );
 }
