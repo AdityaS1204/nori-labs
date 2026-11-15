@@ -1,6 +1,6 @@
 /** Shared visual base for every control row — a raised, rounded "pill". */
 export const ROW_BASE =
-  "relative h-11 rounded-[10px] bg-[#242427] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
+  "relative h-9 rounded-[10px] bg-[#242427] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]";
 
 interface FieldRowProps {
   children: React.ReactNode;
