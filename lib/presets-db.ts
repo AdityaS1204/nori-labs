@@ -7,6 +7,7 @@
 
 import { supabase } from "@/lib/supabase";
 import type { Author, ExpressionState, Preset } from "@/lib/presets";
+import type { NoriEyeParams } from "@/lib/nori-face";
 
 /** Shape of a row in the `presets` table. */
 interface PresetRow {
@@ -23,6 +24,22 @@ interface PresetRow {
   created_at: string;
 }
 
+/** Backfill eye fields added after a row may have been written (shape/weight). */
+function normalizeEye(eye: NoriEyeParams): NoriEyeParams {
+  const e = eye as Partial<NoriEyeParams>;
+  return { ...eye, shape: e.shape ?? "bar", thickness: e.thickness ?? 16 };
+}
+function normalizeStates(states: ExpressionState[]): ExpressionState[] {
+  return (states ?? []).map((s) => ({
+    ...s,
+    face: {
+      ...s.face,
+      left: normalizeEye(s.face.left),
+      right: normalizeEye(s.face.right),
+    },
+  }));
+}
+
 function rowToPreset(row: PresetRow): Preset {
   const author: Author = { name: row.author_name };
   if (row.author_handle) author.handle = row.author_handle;
@@ -31,7 +48,7 @@ function rowToPreset(row: PresetRow): Preset {
     name: row.name,
     description: row.description ?? "",
     author,
-    states: row.states ?? [],
+    states: normalizeStates(row.states),
     coverStateId: row.cover_state_id,
     accent: row.accent ?? "#eaf3ff",
     category: row.category ?? undefined,
