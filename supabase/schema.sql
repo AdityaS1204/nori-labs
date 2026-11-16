@@ -1,6 +1,7 @@
 -- Nori expression presets — run this in the Supabase SQL editor.
 -- A "preset" bundles several named expression states, each a full robot-face
--- pose, stored as JSONB. No auth yet: anyone may read and insert (experiment).
+-- pose, stored as JSONB. Presets are owned (auth.users) and private by default;
+-- `is_public` opts a preset into the community library.
 
 create table if not exists presets (
   id             uuid primary key default gen_random_uuid(),
@@ -13,21 +14,37 @@ create table if not exists presets (
   accent         text not null default '#eaf3ff',
   category       text,
   likes          integer not null default 0,
+  user_id        uuid references auth.users (id) on delete set null,
+  is_public      boolean not null default false,
   created_at     timestamptz not null default now()
 );
 
+-- For an existing table created before auth, see
+-- supabase/migrations/0001_auth_and_visibility.sql (adds the two columns).
+
 create index if not exists presets_created_at_idx on presets (created_at desc);
+create index if not exists presets_user_id_idx on presets (user_id);
+create index if not exists presets_public_created_idx
+  on presets (is_public, created_at desc);
 
 alter table presets enable row level security;
 
--- Public experiment policies. Tighten these once auth is added
--- (e.g. insert: with check (auth.uid() is not null)).
-create policy "presets public read"
-  on presets for select using (true);
+-- Read: anyone sees public presets; you also see your own (private included).
+create policy "presets read public or own"
+  on presets for select
+  using (is_public = true or user_id = auth.uid());
 
-create policy "presets anon insert"
-  on presets for insert with check (true);
+-- Insert: must be signed in, and the row's owner must be you (not spoofable).
+create policy "presets insert own"
+  on presets for insert
+  with check (auth.uid() = user_id);
 
--- Optional, only if you wire up a working like button:
--- create policy "presets anon like"
---   on presets for update using (true) with check (true);
+-- Update / delete: owner only.
+create policy "presets update own"
+  on presets for update
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+create policy "presets delete own"
+  on presets for delete
+  using (user_id = auth.uid());
