@@ -7,6 +7,8 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Menu01Icon, Cancel01Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 import gsap from 'gsap';
 
+import AuthButton from '@/components/auth/AuthButton';
+
 const NAV_LINKS = [
   { href: '#platform', label: 'Platform' },
   { href: '#research', label: 'Research' },
@@ -107,6 +109,14 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              href="/library"
+              className="block px-3 py-1.5 text-[13px] tracking-[0.04em] text-white/50 hover:text-white hover:bg-white/[0.06] rounded-md no-underline transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.96]"
+            >
+              Library
+            </Link>
+          </li>
         </ul>
 
         {/* Desktop right */}
@@ -122,6 +132,7 @@ export default function Navbar() {
             />
             System online
           </span>
+          <AuthButton />
           <Link
             href="#demo"
             className="inline-flex items-center gap-1.5 px-[14px] py-[7px] text-[12px] tracking-[0.06em] uppercase text-[#0d0d0e] bg-[#E8BE3C] rounded-[4px] no-underline transition-[box-shadow,transform] duration-150 hover:shadow-[0_0_0_1px_#E8BE3C,0_4px_16px_rgba(232,190,60,0.25)] motion-safe:active:scale-[0.96]"
@@ -179,6 +190,17 @@ export default function Navbar() {
               </Link>
             </li>
           ))}
+          <li className="nb-di border-b border-white/[0.06]">
+            <Link
+              href="/library"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between px-6 py-[18px] text-[20px] font-extrabold tracking-[0.04em] text-white no-underline hover:bg-white/[0.04] hover:text-[#E8BE3C] transition-[background-color,color] duration-150"
+              style={{ fontFamily: "var(--font-space-grotesk, 'Space Grotesk', sans-serif)" }}
+            >
+              Library
+              <HugeiconsIcon icon={ArrowUpRight01Icon} size={18} color="rgba(255,255,255,0.35)" />
+            </Link>
+          </li>
         </ul>
 
         {/* Footer */}
@@ -191,6 +213,7 @@ export default function Navbar() {
             />
             System online
           </span>
+          <AuthButton className="self-start" />
           <Link
             href="#demo"
             onClick={() => setOpen(false)}

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons";
 
+import AuthButton from "@/components/auth/AuthButton";
+
 export const metadata = { title: "Expression Library — Nori Robotics" };
 
 function LibraryHeader() {
@@ -27,14 +29,17 @@ function LibraryHeader() {
         </span>
       </div>
 
-      {/* Right: link to the lab */}
-      <Link
-        href="/lab"
-        className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[12px] font-medium tracking-[0.03em] text-white/50 no-underline transition-[color,background-color] duration-150 hover:bg-white/[0.06] hover:text-white"
-      >
-        Open playground
-        <HugeiconsIcon icon={ArrowUpRight01Icon} size={13} color="currentColor" />
-      </Link>
+      {/* Right: auth + link to the lab */}
+      <div className="flex items-center gap-1">
+        <AuthButton />
+        <Link
+          href="/lab"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[12px] font-medium tracking-[0.03em] text-white/50 no-underline transition-[color,background-color] duration-150 hover:bg-white/[0.06] hover:text-white"
+        >
+          Open playground
+          <HugeiconsIcon icon={ArrowUpRight01Icon} size={13} color="currentColor" />
+        </Link>
+      </div>
     </header>
   );
 }

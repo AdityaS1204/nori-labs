@@ -1,25 +1,44 @@
 import { Suspense } from "react";
 
-import { getPresets } from "@/lib/presets-db";
+import { getMyPresets, getPresets } from "@/lib/presets-db";
+import { getServerSupabase } from "@/lib/supabase/server";
 import LibraryIntro from "@/components/library/LibraryIntro";
 import ExpressionGrid from "@/components/library/ExpressionGrid";
 
-export default function LibraryPage() {
+export default function LibraryPage(props: PageProps<"/library">) {
   return (
     <div className="mx-auto w-full max-w-[1280px] px-5 py-8 sm:px-8 sm:py-10">
       <Suspense fallback={<LibrarySkeleton />}>
-        <LibraryFeed />
+        <LibraryFeed searchParams={props.searchParams} />
       </Suspense>
     </div>
   );
 }
 
 /**
- * Fetches presets at request time. Kept uncached and behind `<Suspense>` so
- * newly saved presets appear immediately (Cache Components model).
+ * Fetches the public community feed always; also the signed-in user's own
+ * presets (private + public) so the "My presets" tab can show them. Kept
+ * uncached and behind `<Suspense>` (reads session cookies) so newly saved
+ * presets appear immediately.
  */
-async function LibraryFeed() {
-  const presets = await getPresets();
+async function LibraryFeed({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+
+  const supabase = await getServerSupabase();
+  const {
+    data: { user },
+  } = (await supabase?.auth.getUser()) ?? { data: { user: null } };
+  const isLoggedIn = Boolean(user);
+
+  const [presets, myPresets] = await Promise.all([
+    getPresets(),
+    isLoggedIn ? getMyPresets() : Promise.resolve([]),
+  ]);
+
   const creators = new Set(
     presets.map((p) => p.author.handle || p.author.name),
   ).size;
@@ -28,7 +47,12 @@ async function LibraryFeed() {
     <>
       <LibraryIntro total={presets.length} creators={creators} />
       <div className="mt-8">
-        <ExpressionGrid presets={presets} />
+        <ExpressionGrid
+          publicPresets={presets}
+          myPresets={myPresets}
+          isLoggedIn={isLoggedIn}
+          initialTab={tab === "mine" ? "mine" : "public"}
+        />
       </div>
     </>
   );

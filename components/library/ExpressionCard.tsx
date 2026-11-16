@@ -5,6 +5,8 @@ import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
 
 interface ExpressionCardProps {
   preset: Preset;
+  /** Show a Private badge for non-public presets (used in the "My presets" tab). */
+  showVisibility?: boolean;
 }
 
 /**
@@ -12,7 +14,10 @@ interface ExpressionCardProps {
  * state renders as a *live* preview (the eyes glance around on their own). The
  * whole card links into the playground (`/lab/[id]`).
  */
-export default function ExpressionCard({ preset }: ExpressionCardProps) {
+export default function ExpressionCard({
+  preset,
+  showVisibility = false,
+}: ExpressionCardProps) {
   const { id, name, accent } = preset;
   const cover = coverState(preset);
 
@@ -36,6 +41,13 @@ export default function ExpressionCard({ preset }: ExpressionCardProps) {
           gazeMode="random"
           className="absolute inset-0 h-full w-full p-5"
         />
+
+        {/* visibility badge (My presets view) */}
+        {showVisibility && !preset.isPublic && (
+          <span className="absolute left-3 top-3 rounded-full border border-white/[0.12] bg-black/60 px-2 py-0.5 text-[10px] font-medium tracking-[0.03em] text-white/70 backdrop-blur-sm">
+            Private
+          </span>
+        )}
 
         {/* bottom scrim for label legibility */}
         <div
