@@ -7,6 +7,8 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
 
 import NoriFace from "@/components/robot-face/NoriFace";
+import Toggle from "@/components/controls/Toggle";
+import { useAuth } from "@/components/auth/AuthProvider";
 import type { Author, Preset } from "@/lib/presets";
 
 export interface SavePresetMeta {
@@ -14,6 +16,8 @@ export interface SavePresetMeta {
   description: string;
   author: Author;
   category?: string;
+  /** Share to the community library (false = private, the default). */
+  isPublic: boolean;
 }
 
 interface SavePresetDialogProps {
@@ -41,16 +45,24 @@ export default function SavePresetDialog({
   error,
   isRemix = false,
 }: SavePresetDialogProps) {
+  const { user } = useAuth();
+  // Default the author to the signed-in user (email local-part), so the preset
+  // is theirs — never the original maker's on a remix.
+  const defaultAuthor = user?.email ? user.email.split("@")[0] : "";
+
   const [name, setName] = useState(
     isRemix && preset.name ? `${preset.name} (remix)` : preset.name,
   );
   const [description, setDescription] = useState(preset.description);
-  // A remix is the remixer's own preset — don't inherit the original author.
-  const [authorName, setAuthorName] = useState(isRemix ? "" : preset.author.name);
+  const [authorName, setAuthorName] = useState(
+    isRemix ? defaultAuthor : preset.author.name || defaultAuthor,
+  );
   const [authorHandle, setAuthorHandle] = useState(
     isRemix ? "" : preset.author.handle ?? "",
   );
   const [category, setCategory] = useState(preset.category ?? "");
+  // Private by default — opt in to the community library.
+  const [isPublic, setIsPublic] = useState(false);
   const reduce = useReducedMotion();
   const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -69,6 +81,7 @@ export default function SavePresetDialog({
     onSubmit({
       name: name.trim(),
       description: description.trim(),
+      isPublic,
       author: {
         name: authorName.trim(),
         handle: authorHandle.trim() || undefined,
@@ -220,6 +233,25 @@ export default function SavePresetDialog({
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g. Playful"
                 className={field}
+              />
+            </div>
+
+            {/* Visibility — private by default */}
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.07] bg-white/[0.03] px-3.5 py-3">
+              <div className="min-w-0">
+                <p className="text-[13px] font-medium text-white/85">
+                  Share with the community
+                </p>
+                <p className="mt-0.5 text-[12px] leading-relaxed text-white/45">
+                  {isPublic
+                    ? "Anyone can find this in the public library."
+                    : "Private — only you can see it in “My presets”."}
+                </p>
+              </div>
+              <Toggle
+                label="Share with the community"
+                checked={isPublic}
+                onChange={setIsPublic}
               />
             </div>
           </div>

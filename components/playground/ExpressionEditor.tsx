@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { RefreshIcon, Copy01Icon, Tick02Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
@@ -14,7 +14,9 @@ import {
   newState,
   type Preset,
 } from "@/lib/presets";
-import { createPreset } from "@/lib/presets-db";
+import { createPreset } from "@/lib/presets-create";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { clearDraft, readDraft, stashDraft } from "@/lib/preset-draft";
 import type {
   BrowFieldKey,
   EyeFieldKey,
@@ -41,6 +43,8 @@ interface ExpressionEditorProps {
  */
 export default function ExpressionEditor({ initialPreset }: ExpressionEditorProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
 
   const [preset, setPreset] = useState<Preset>(() =>
     initialPreset ? clonePreset(initialPreset) : newPreset(),
@@ -71,6 +75,40 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
     () => preset.states.find((s) => s.id === activeId) ?? preset.states[0],
     [preset.states, activeId],
   );
+
+  /* Resume after the login detour: if a draft was stashed when a signed-out
+     user hit Save, restore the exact preset they were editing (once we know
+     they're signed in) and reopen the Save dialog. */
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current || authLoading || !user) return;
+    const draft = readDraft();
+    if (!draft) return;
+    restoredRef.current = true;
+    clearDraft();
+    // Restoring persisted work once auth resolves is exactly what this effect
+    // is for; the setState calls run at most once (guarded by restoredRef).
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setPreset(draft.preset);
+    setActiveId(draft.activeId);
+    if (draft.wantSave) {
+      setSaveError(null);
+      setSaveOpen(true);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [authLoading, user]);
+
+  /* Save is gated: signed-out users stash their work and go to /login, then
+     land back here (?next=) where the effect above restores and resumes. */
+  const requestSave = useCallback(() => {
+    if (!user) {
+      stashDraft(preset, activeId);
+      router.push(`/login?next=${encodeURIComponent(pathname ?? "/lab")}`);
+      return;
+    }
+    setSaveError(null);
+    setSaveOpen(true);
+  }, [user, preset, activeId, router, pathname]);
 
   /* ── Face edits (write into the active state's face) ── */
   const patchFace = useCallback(
@@ -220,6 +258,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
           states: preset.states,
           coverStateId: preset.coverStateId,
           accent: coverState(preset).face.color,
+          isPublic: meta.isPublic,
         });
         setSaveOpen(false);
         router.push("/library");
@@ -275,10 +314,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
 
       <button
         type="button"
-        onClick={() => {
-          setSaveError(null);
-          setSaveOpen(true);
-        }}
+        onClick={requestSave}
         className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[#E8BE3C] text-[13px] font-semibold text-[#0d0d0e] transition-[box-shadow,transform] hover:shadow-[0_0_0_1px_#E8BE3C,0_4px_16px_rgba(232,190,60,0.25)] motion-safe:active:scale-[0.99]"
       >
         <HugeiconsIcon icon={FloppyDiskIcon} size={15} color="currentColor" />
