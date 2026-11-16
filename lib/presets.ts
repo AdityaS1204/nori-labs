@@ -42,6 +42,10 @@ export interface Preset {
   /** Optional free-form category, used by the library filter chips. */
   category?: string;
   likes: number;
+  /** Whether the preset is shared to the community library (vs. private). */
+  isPublic: boolean;
+  /** Owner's auth user id; `null`/absent for legacy or unsaved drafts. */
+  ownerId?: string | null;
   /** ISO date; assigned by the database on save. */
   createdAt: string;
 }
@@ -123,6 +127,8 @@ export function newPreset(): Preset {
     coverStateId: first.id,
     accent: NEUTRAL_FACE.color,
     likes: 0,
+    isPublic: false,
+    ownerId: null,
     createdAt: "",
   };
 }
