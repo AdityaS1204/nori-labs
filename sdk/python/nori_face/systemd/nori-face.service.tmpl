@@ -1,0 +1,18 @@
+[Unit]
+Description=Nori robot face
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+User={user}
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/{user}/.Xauthority
+# The panel is the robot's face: it must never blank, dim or show a cursor.
+ExecStartPre=/bin/sh -c 'xset s off; xset -dpms; xset s noblank; true'
+ExecStart={python} -m nori_face preview {pack} --ws-port {ws_port}
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=graphical.target
