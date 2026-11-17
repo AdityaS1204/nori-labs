@@ -14,8 +14,10 @@ import {
   newState,
   type Preset,
 } from "@/lib/presets";
+import { packFileName, presetToPack } from "@/lib/face-pack";
 import { createPreset } from "@/lib/presets-create";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useLabActions } from "@/components/playground/LabActionsProvider";
 import { clearDraft, readDraft, stashDraft } from "@/lib/preset-draft";
 import type {
   BrowFieldKey,
@@ -234,6 +236,32 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
     patchFace(() => fresh);
     setLinked(true);
   }, [active.label, patchFace]);
+
+  /* Download the whole bundle as a face pack for the robot SDK. The clipboard
+     copy below is a different affordance: one state's raw parameters. */
+  const exportPack = useCallback((): boolean => {
+    try {
+      const pack = presetToPack(preset);
+      const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${packFileName(pack.name)}.nori.json`;
+      a.click();
+      // Revoking synchronously races the download, which may not have read the blob yet.
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      return true;
+    } catch (err) {
+      console.error("Face pack export failed", err);
+      return false;
+    }
+  }, [preset]);
+
+  const { registerExport } = useLabActions();
+  useEffect(() => {
+    registerExport(exportPack);
+    return () => registerExport(null);
+  }, [registerExport, exportPack]);
 
   const copyValues = useCallback(async () => {
     try {

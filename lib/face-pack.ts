@@ -133,6 +133,11 @@ export function slugifyStateId(label: string, index: number): string {
   return slug || `state-${index + 1}`;
 }
 
+/** Basename for a downloaded pack, without the `.nori.json` suffix. */
+export function packFileName(name: string): string {
+  return slugifyStateId(name, 0).replace(/^state-1$/, "face");
+}
+
 function uniqueId(candidate: string, used: Set<string>): string {
   if (!used.has(candidate)) return candidate;
   let n = 2;

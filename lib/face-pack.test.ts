@@ -7,6 +7,7 @@ import {
   SCHEMA_VERSION,
   neutralPack,
   normalizeHex,
+  packFileName,
   packState,
   parsePack,
   presetToPack,
@@ -238,6 +239,17 @@ describe("normalizeHex", () => {
     expect(() => normalizeHex("rgb(1,2,3)", "color")).toThrow(FacePackError);
     expect(() => normalizeHex("red", "color")).toThrow(FacePackError);
     expect(() => normalizeHex(123, "color")).toThrow(FacePackError);
+  });
+});
+
+describe("packFileName", () => {
+  it("slugifies a pack name", () => {
+    expect(packFileName("Nori Default Moods")).toBe("nori-default-moods");
+  });
+
+  it("falls back to a generic basename when the name has no usable characters", () => {
+    expect(packFileName("***")).toBe("face");
+    expect(packFileName("")).toBe("face");
   });
 });
 
