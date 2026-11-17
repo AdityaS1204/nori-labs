@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { HERO, SUPPORTING_DETAILS } from "@/lib/landing-content";
-import MediaCard from "./MediaCard";
+import HeroMedia from "./HeroMedia";
+import Reveal from "./Reveal";
 import SectionLabel from "./SectionLabel";
 
 export default function Hero() {
@@ -10,7 +11,7 @@ export default function Hero() {
       <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 pb-6 pt-28 sm:px-8 md:pt-32">
         <SectionLabel>{HERO.label}</SectionLabel>
 
-        <div className="flex flex-col gap-7">
+        <Reveal className="flex flex-col gap-7">
           <h1
             id="hero-headline"
             className="m-0 text-[clamp(40px,8vw,76px)] font-semibold leading-[0.98] tracking-[-0.035em] text-white"
@@ -40,24 +41,26 @@ export default function Hero() {
               {HERO.secondaryCta.label}
             </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="px-3 pb-16">
-        <MediaCard media={HERO.media} />
+        <HeroMedia />
 
-        <dl className="m-0 mt-3 grid gap-px overflow-hidden rounded-[10px] bg-white/[0.08] sm:grid-cols-3">
-          {SUPPORTING_DETAILS.map(({ label, value }) => (
-            <div key={label} className="flex flex-col gap-1.5 bg-ink px-5 py-4">
-              <dt className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">
-                {label}
-              </dt>
-              <dd className="m-0 text-[15px] font-medium tracking-[-0.01em] text-white/85">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <Reveal className="mx-auto mt-3 max-w-[1180px]" delay={0.05}>
+          <dl className="m-0 grid gap-px overflow-hidden rounded-[10px] bg-white/[0.08] sm:grid-cols-3">
+            {SUPPORTING_DETAILS.map(({ label, value }) => (
+              <div key={label} className="flex flex-col gap-1.5 bg-ink px-5 py-4">
+                <dt className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">
+                  {label}
+                </dt>
+                <dd className="m-0 text-[15px] font-medium tracking-[-0.01em] text-white/85">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
       </div>
     </section>
   );

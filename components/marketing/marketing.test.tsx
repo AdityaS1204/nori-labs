@@ -144,6 +144,31 @@ describe("SiteFooter", () => {
   });
 });
 
+describe("scroll entrance", () => {
+  const pages = [
+    markup(<Hero />),
+    markup(<WhatItIs />),
+    markup(<TheFace />),
+    markup(<Hardware />),
+    markup(<TeachIt />),
+    markup(<Closing />),
+  ];
+
+  // motion writes `initial` as inline style during SSR, so a fade from 0 would
+  // ship the page with its content invisible until hydration finishes.
+  it("never ships hidden content in the server-rendered markup", () => {
+    for (const html of pages) {
+      expect(html).not.toMatch(/opacity:\s*0[^.\d]/);
+      expect(html).not.toMatch(/visibility:\s*hidden/);
+    }
+  });
+
+  it("starts each revealed block offset rather than faded", () => {
+    const all = pages.join("");
+    expect(all).toMatch(/translateY\(22px\)|translateY\(22\)/);
+  });
+});
+
 describe("placeholder media", () => {
   it("labels every placeholder as an image for assistive tech", () => {
     const all = [

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { CLOSING } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
+import Reveal from "./Reveal";
 import SectionLabel from "./SectionLabel";
 
 export default function Closing() {
@@ -11,7 +12,7 @@ export default function Closing() {
       aria-labelledby="closing-headline"
       className="grid scroll-mt-20 bg-ink md:grid-cols-2"
     >
-      <div className="flex flex-col items-start justify-center gap-6 px-5 py-20 sm:px-8 md:py-28 md:pl-[max(2rem,calc((100vw-1180px)/2))]">
+      <Reveal className="flex flex-col items-start justify-center gap-6 px-5 py-20 sm:px-8 md:py-28 md:pl-[max(2rem,calc((100vw-1180px)/2))]">
         <SectionLabel>{CLOSING.label}</SectionLabel>
 
         <h2
@@ -37,7 +38,7 @@ export default function Closing() {
         >
           {CLOSING.cta.label}
         </Link>
-      </div>
+      </Reveal>
 
       <MediaCard media={CLOSING.media} className="!rounded-none min-h-full" />
     </section>
