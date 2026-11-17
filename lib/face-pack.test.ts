@@ -73,6 +73,28 @@ describe("presetToPack", () => {
   });
 });
 
+describe("shipped motion defaults", () => {
+  // These were hardcoded in NoriFaceLive before the pack format existed. They are
+  // the tuned "feel" of the playground, so pin the numbers, not just the shape.
+  it("matches the values the playground was tuned with", () => {
+    expect(DEFAULT_TRANSITION.spring).toEqual({ stiffness: 300, damping: 30, mass: 0.6 });
+    expect(DEFAULT_AMBIENT.blink).toEqual({
+      closeMs: 70,
+      closeEase: "easeIn",
+      openMs: 130,
+      openEase: "easeOut",
+      closedScale: 0.06,
+      everyMs: [2500, 6000],
+    });
+    expect(DEFAULT_AMBIENT.gaze).toEqual({
+      mode: "random",
+      clamp: [24, 16],
+      retargetMs: [650, 2850],
+      spring: { stiffness: 140, damping: 18, mass: 0.6 },
+    });
+  });
+});
+
 describe("parsePack", () => {
   it("round-trips an exported pack unchanged", () => {
     const pack = presetToPack(presetWith(["Neutral", "Happy"]));

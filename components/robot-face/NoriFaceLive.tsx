@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   motion,
   animate,
@@ -10,6 +10,15 @@ import {
   type MotionValue,
 } from "motion/react";
 
+import {
+  DEFAULT_AMBIENT,
+  DEFAULT_TRANSITION,
+  type AmbientSpec,
+  type BlinkSpec,
+  type FitMode,
+  type GazeSpec,
+  type TransitionSpec,
+} from "@/lib/face-pack";
 import {
   FACE_VIEWBOX,
   browCenterY,
@@ -24,50 +33,68 @@ import {
 import CustomSvgEye from "./CustomSvgEye";
 
 /**
- * Motion-animated version of the Nori face used by the playground. Every
- * parameter change springs into place in real time, and the eyes blink on
- * their own. Eye geometry (width/height/radius/colour) animates on the rect;
- * placement and deformation (gap/offset/openness/tilt) animate as transforms.
+ * Motion-animated version of the Nori face. Every parameter change springs into
+ * place in real time, and the eyes blink and glance on their own. Eye geometry
+ * (width/height/radius/colour) animates on the rect; placement and deformation
+ * (gap/offset/openness/tilt) animate as transforms.
+ *
+ * Shared by the playground preview and the robot kiosk renderer — the motion
+ * parameters come from a face pack so both move identically.
  */
 
-/** How the eyes should move. */
+/** How the eyes should move. `cursor` is preview-only and never persisted. */
 export type GazeMode = "off" | "cursor" | "random";
 
 interface NoriFaceLiveProps {
   face: NoriFaceParams;
   /** Sizing is controlled via `className` (the SVG fills its container). */
   className?: string;
-  /** Idle blinking. Defaults on (disabled under reduced-motion). */
-  ambient?: boolean;
+  /**
+   * Idle blinking and gaze tuning. `true` uses the shipped defaults, `false`
+   * disables blinking, or pass a pack's `ambient` block.
+   */
+  ambient?: boolean | AmbientSpec;
+  /** Spring used when morphing between faces. Defaults to the shipped values. */
+  transition?: TransitionSpec;
   /**
    * Eye movement mode: `"off"` holds the gaze centred, `"cursor"` makes the
    * eyes look toward the pointer, `"random"` glances in random directions.
    */
   gazeMode?: GazeMode;
+  /** How the face viewBox maps onto its container. */
+  fit?: FitMode;
+  /**
+   * Ignore `prefers-reduced-motion`. Set on a robot's own face, where a
+   * permanently still face reads as broken rather than calm.
+   */
+  forceMotion?: boolean;
 }
 
 const { width: VB_W, height: VB_H } = FACE_VIEWBOX;
 const CX = VB_W / 2;
 const CY = VB_H / 2;
 
-const spring = { type: "spring", stiffness: 300, damping: 30, mass: 0.6 } as const;
-
-/** Maximum gaze shift (viewBox units) — enough to read as a glance, not a slide. */
-const GAZE_X = 24;
-const GAZE_Y = 16;
-const gazeSpring = { stiffness: 140, damping: 18, mass: 0.6 } as const;
+const PRESERVE_ASPECT: Record<FitMode, string> = {
+  contain: "xMidYMid meet",
+  cover: "xMidYMid slice",
+  stretch: "none",
+};
 
 const clamp1 = (n: number) => Math.max(-1, Math.min(1, n));
+const inRange = ([lo, hi]: [number, number]) => lo + Math.random() * (hi - lo);
 
 /**
  * Drives a gaze offset (viewBox units) onto two springs, from either the
  * pointer (`cursor`) or a random timer (`random`). Returns the SVG ref the
  * pointer geometry is measured against.
  */
-function useGaze(mode: GazeMode, reduce: boolean) {
+function useGaze(mode: GazeMode, reduce: boolean, spec: GazeSpec) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const x = useSpring(0, gazeSpring);
-  const y = useSpring(0, gazeSpring);
+  const [clampX, clampY] = spec.clamp;
+  const { stiffness, damping, mass } = spec.spring;
+  const config = useMemo(() => ({ stiffness, damping, mass }), [stiffness, damping, mass]);
+  const x = useSpring(0, config);
+  const y = useSpring(0, config);
 
   // Cursor-follow: look toward the pointer, relative to the face centre.
   useEffect(() => {
@@ -80,8 +107,8 @@ function useGaze(mode: GazeMode, reduce: boolean) {
       const r = svg.getBoundingClientRect();
       const nx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2 || 1);
       const ny = (e.clientY - (r.top + r.height / 2)) / (r.height / 2 || 1);
-      x.set(clamp1(nx) * GAZE_X);
-      y.set(clamp1(ny) * GAZE_Y);
+      x.set(clamp1(nx) * clampX);
+      y.set(clamp1(ny) * clampY);
     };
     const onLeave = () => {
       x.set(0);
@@ -96,9 +123,10 @@ function useGaze(mode: GazeMode, reduce: boolean) {
       x.set(0);
       y.set(0);
     };
-  }, [mode, x, y]);
+  }, [mode, x, y, clampX, clampY]);
 
   // Random: glance to a new random point at random intervals.
+  const [retargetLo, retargetHi] = spec.retargetMs;
   useEffect(() => {
     if (mode !== "random" || reduce) return;
     let active = true;
@@ -110,11 +138,11 @@ function useGaze(mode: GazeMode, reduce: boolean) {
           if (!active) return;
           const a = Math.random() * Math.PI * 2;
           const d = Math.sqrt(Math.random()); // uniform over the disc
-          x.set(Math.cos(a) * d * GAZE_X);
-          y.set(Math.sin(a) * d * GAZE_Y);
+          x.set(Math.cos(a) * d * clampX);
+          y.set(Math.sin(a) * d * clampY);
           tick();
         },
-        650 + Math.random() * 2200,
+        inRange([retargetLo, retargetHi]),
       );
     };
     tick();
@@ -125,7 +153,7 @@ function useGaze(mode: GazeMode, reduce: boolean) {
       x.set(0);
       y.set(0);
     };
-  }, [mode, reduce, x, y]);
+  }, [mode, reduce, x, y, clampX, clampY, retargetLo, retargetHi]);
 
   // Recentre when movement is off.
   useEffect(() => {
@@ -142,8 +170,10 @@ const clampRadius = (e: NoriEyeParams) =>
   Math.min(e.radius, e.width / 2, e.height / 2);
 
 /** A blink loop driven onto a shared vertical-scale MotionValue. */
-function useBlink(enabled: boolean) {
+function useBlink(enabled: boolean, spec: BlinkSpec) {
   const blink = useMotionValue(1);
+  const { closeMs, closeEase, openMs, openEase, closedScale } = spec;
+  const [everyLo, everyHi] = spec.everyMs;
 
   useEffect(() => {
     if (!enabled) {
@@ -157,12 +187,15 @@ function useBlink(enabled: boolean) {
       timer = setTimeout(
         async () => {
           if (!active) return;
-          await animate(blink, 0.06, { duration: 0.07, ease: "easeIn" }).finished;
+          await animate(blink, closedScale, {
+            duration: closeMs / 1000,
+            ease: closeEase,
+          }).finished;
           if (!active) return;
-          await animate(blink, 1, { duration: 0.13, ease: "easeOut" }).finished;
+          await animate(blink, 1, { duration: openMs / 1000, ease: openEase }).finished;
           schedule();
         },
-        2500 + Math.random() * 3500,
+        inRange([everyLo, everyHi]),
       );
     };
     schedule();
@@ -171,10 +204,12 @@ function useBlink(enabled: boolean) {
       active = false;
       clearTimeout(timer);
     };
-  }, [enabled, blink]);
+  }, [enabled, blink, closeMs, closeEase, openMs, openEase, closedScale, everyLo, everyHi]);
 
   return blink;
 }
+
+type Spring = { type: "spring"; stiffness: number; damping: number; mass: number };
 
 function LiveEye({
   eye,
@@ -182,12 +217,14 @@ function LiveEye({
   color,
   blink,
   side,
+  spring,
 }: {
   eye: NoriEyeParams;
   cx: number;
   color: string;
   blink: MotionValue<number>;
   side: "left" | "right";
+  spring: Spring;
 }) {
   const w = eye.width;
   const h = eye.height;
@@ -273,12 +310,14 @@ function LiveBrow({
   cx,
   color,
   mirror,
+  spring,
 }: {
   brow: NoriBrowParams;
   eye: NoriEyeParams;
   cx: number;
   color: string;
   mirror: 1 | -1;
+  spring: Spring;
 }) {
   // Float above the eye's base top edge (clamped to stay in the viewBox).
   const browY = browCenterY(eye, brow);
@@ -299,11 +338,25 @@ export default function NoriFaceLive({
   face,
   className,
   ambient = true,
+  transition = DEFAULT_TRANSITION,
   gazeMode = "off",
+  fit = "contain",
+  forceMotion = false,
 }: NoriFaceLiveProps) {
-  const reduce = useReducedMotion();
-  const blink = useBlink(ambient && !reduce);
-  const { svgRef, gazeX, gazeY } = useGaze(gazeMode, !!reduce);
+  const prefersReduced = useReducedMotion();
+  const reduce = !forceMotion && !!prefersReduced;
+
+  const ambientSpec = typeof ambient === "object" ? ambient : DEFAULT_AMBIENT;
+  const blinkEnabled = ambient !== false && !reduce;
+
+  const blink = useBlink(blinkEnabled, ambientSpec.blink);
+  const { svgRef, gazeX, gazeY } = useGaze(gazeMode, reduce, ambientSpec.gaze);
+
+  const s = transition.spring;
+  const spring = useMemo<Spring>(
+    () => ({ type: "spring", stiffness: s.stiffness, damping: s.damping, mass: s.mass }),
+    [s.stiffness, s.damping, s.mass],
+  );
 
   const { color, glow, gap, left, right, browsEnabled, leftBrow, rightBrow } =
     face;
@@ -316,7 +369,7 @@ export default function NoriFaceLive({
     <svg
       ref={svgRef}
       viewBox={`0 0 ${VB_W} ${VB_H}`}
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio={PRESERVE_ASPECT[fit]}
       fill="none"
       role="img"
       aria-label="Nori robot face preview"
@@ -325,8 +378,8 @@ export default function NoriFaceLive({
       <g style={{ filter: glowFilter }}>
         {/* Gaze: shifts the eyes (and brows) toward where they're looking. */}
         <motion.g style={{ x: gazeX, y: gazeY }}>
-          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} side="left" />
-          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} side="right" />
+          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} side="left" spring={spring} />
+          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} side="right" spring={spring} />
           {browsEnabled && (
             <>
               <LiveBrow
@@ -335,6 +388,7 @@ export default function NoriFaceLive({
                 cx={CX - gap / 2}
                 color={color}
                 mirror={1}
+                spring={spring}
               />
               <LiveBrow
                 brow={rightBrow}
@@ -342,6 +396,7 @@ export default function NoriFaceLive({
                 cx={CX + gap / 2}
                 color={color}
                 mirror={-1}
+                spring={spring}
               />
             </>
           )}
