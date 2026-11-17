@@ -1,43 +1,46 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  CAPABILITIES,
   CLOSING,
-  FAQ,
-  FOOTER_LINKS,
+  FOOTER,
   HARDWARE,
   HERO,
-  IN_CONTEXT,
+  NAV_CTA,
   NAV_LINKS,
-  SOCIAL_LINKS,
   SUPPORTING_DETAILS,
-  TEACHING,
+  TEACH_IT,
+  THE_FACE,
+  WHAT_IT_IS,
   type MediaSlot,
 } from "@/lib/landing-content";
+import { FACE_GRID } from "@/lib/landing-faces";
 
 const allMedia: MediaSlot[] = [
   HERO.media,
-  IN_CONTEXT.media,
-  TEACHING.media,
-  HARDWARE.media,
-  ...CAPABILITIES.map((c) => c.media),
+  WHAT_IT_IS.hero,
+  ...WHAT_IT_IS.pair,
+  ...HARDWARE.cards.map((c) => c.media),
+  TEACH_IT.media,
+  CLOSING.media,
 ];
 
 describe("landing content", () => {
-  it("fills every slot the wireframe defines", () => {
-    expect(CAPABILITIES).toHaveLength(4);
-    expect(TEACHING.steps).toHaveLength(3);
+  it("fills every slot the design defines", () => {
+    expect(HERO.headline).toHaveLength(2);
+    expect(WHAT_IT_IS.pair).toHaveLength(2);
+    expect(HARDWARE.cards).toHaveLength(4);
+    expect(FACE_GRID).toHaveLength(4);
+    expect(TEACH_IT.steps).toHaveLength(3);
     expect(SUPPORTING_DETAILS).toHaveLength(3);
     expect(HARDWARE.specs.length).toBeGreaterThanOrEqual(4);
-    expect(FAQ.length).toBeGreaterThanOrEqual(3);
   });
 
   it("keeps the production price and ship date consistent everywhere", () => {
-    expect(HERO.headline).toContain("$1,688");
+    expect(HERO.body).toContain("$1,688");
     expect(CLOSING.price).toBe("$1,688");
-    expect(HERO.eyebrow).toMatch(/fall 2026/i);
+    expect(HERO.body).toMatch(/fall 2026/i);
     expect(CLOSING.body).toMatch(/Fall 2026/);
-    expect(HERO.availability).toMatch(/no deposit/i);
+    expect(CLOSING.headline.join(" ")).toMatch(/no deposit/i);
   });
 
   it("carries the real hardware specs through unchanged", () => {
@@ -49,48 +52,55 @@ describe("landing content", () => {
     expect(byLabel.Battery).toContain("6-8 hours");
   });
 
-  it("gives every capability a stable id and a media slot", () => {
-    const ids = CAPABILITIES.map((c) => c.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const c of CAPABILITIES) {
-      expect(c.title.length).toBeGreaterThan(0);
-      expect(c.body.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("gives every media slot a label and a parseable ratio", () => {
+  it("gives every media slot a marker, a known tone and a parseable ratio", () => {
+    const seen = new Set<string>();
     for (const media of allMedia) {
-      expect(media.label.length).toBeGreaterThan(0);
+      expect(media.slot.length).toBeGreaterThan(0);
+      expect(["sage", "ink", "haze"]).toContain(media.tone);
       expect(media.ratio).toMatch(/^\d+ \/ \d+$/);
+      expect(seen.has(media.slot)).toBe(false);
+      seen.add(media.slot);
     }
   });
 
-  it("points every in-page nav and footer link at a section that exists", () => {
-    const sectionIds = new Set(["context", "capabilities", "teaching", "hardware", "faq"]);
-    for (const { href } of [...NAV_LINKS, ...FOOTER_LINKS]) {
-      if (href.startsWith("#")) expect(sectionIds).toContain(href.slice(1));
+  it("points every in-page link at a section that exists", () => {
+    const ids = new Set(["intro", "what-it-is", "the-face", "hardware", "teach-it", "order"]);
+    const links = [
+      ...NAV_LINKS,
+      NAV_CTA,
+      HERO.primaryCta,
+      HERO.secondaryCta,
+      THE_FACE.cta,
+      TEACH_IT.cta,
+      CLOSING.cta,
+      ...FOOTER.links,
+    ];
+    for (const { href } of links) {
+      if (href.startsWith("#")) expect(ids).toContain(href.slice(1));
       else expect(href.startsWith("/")).toBe(true);
     }
   });
 
   it("uses absolute https urls for socials", () => {
-    expect(SOCIAL_LINKS.length).toBeGreaterThan(0);
-    for (const { href, label } of SOCIAL_LINKS) {
+    expect(FOOTER.socials.length).toBeGreaterThan(0);
+    for (const { href, label } of FOOTER.socials) {
       expect(href).toMatch(/^https:\/\//);
       expect(label.length).toBeGreaterThan(0);
     }
   });
 
+  it("gives every grid face a unique id and a visible eye", () => {
+    const ids = FACE_GRID.map((f) => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const { face, label } of FACE_GRID) {
+      expect(label.length).toBeGreaterThan(0);
+      expect(face.left.openness).toBeGreaterThan(0);
+      expect(face.right.openness).toBeGreaterThan(0);
+    }
+  });
+
   it("has no unresolved copy placeholders", () => {
-    const blob = JSON.stringify({
-      HERO,
-      IN_CONTEXT,
-      CAPABILITIES,
-      TEACHING,
-      HARDWARE,
-      FAQ,
-      CLOSING,
-    });
+    const blob = JSON.stringify({ HERO, WHAT_IT_IS, THE_FACE, HARDWARE, TEACH_IT, CLOSING });
     expect(blob).not.toMatch(/lorem|ipsum|TODO|TBD|xxx/i);
   });
 });

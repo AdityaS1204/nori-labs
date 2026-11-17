@@ -1,26 +1,24 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import Capabilities from "./Capabilities";
-import FaqAndClosing from "./FaqAndClosing";
-import HardwareDetails from "./HardwareDetails";
+import Closing from "./Closing";
+import Hardware from "./Hardware";
 import Hero from "./Hero";
-import InContext from "./InContext";
 import SiteFooter from "./SiteFooter";
-import TeachingFlow from "./TeachingFlow";
+import TeachIt from "./TeachIt";
+import TheFace from "./TheFace";
+import WhatItIs from "./WhatItIs";
 import {
-  CAPABILITIES,
   CLOSING,
-  FAQ,
+  FOOTER,
   HARDWARE,
   HERO,
-  IN_CONTEXT,
-  SOCIAL_LINKS,
   SUPPORTING_DETAILS,
-  TEACHING,
+  TEACH_IT,
+  THE_FACE,
+  WHAT_IT_IS,
 } from "@/lib/landing-content";
-
-const strip = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+import { FACE_GRID } from "@/lib/landing-faces";
 
 const decode = (html: string) =>
   html
@@ -30,16 +28,16 @@ const decode = (html: string) =>
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">");
 
-const text = (node: React.ReactElement) => decode(strip(renderToStaticMarkup(node)));
 const markup = (node: React.ReactElement) => decode(renderToStaticMarkup(node));
+const text = (node: React.ReactElement) =>
+  markup(node).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 describe("Hero", () => {
   const html = markup(<Hero />);
-  const body = text(<Hero />);
 
-  it("renders headline, eyebrow and both calls to action", () => {
-    expect(body).toContain(HERO.headline);
-    expect(body).toContain(HERO.eyebrow);
+  it("renders both headline lines, the label and both calls to action", () => {
+    const body = text(<Hero />);
+    for (const line of HERO.headline) expect(body).toContain(line);
     expect(body).toContain(HERO.primaryCta.label);
     expect(body).toContain(HERO.secondaryCta.label);
     expect(html).toContain(`href="${HERO.primaryCta.href}"`);
@@ -50,6 +48,7 @@ describe("Hero", () => {
   });
 
   it("renders every supporting detail", () => {
+    const body = text(<Hero />);
     for (const { label, value } of SUPPORTING_DETAILS) {
       expect(body).toContain(label);
       expect(body).toContain(value);
@@ -57,54 +56,53 @@ describe("Hero", () => {
   });
 });
 
-describe("InContext", () => {
-  it("renders the headline, caption and every chapter tab", () => {
-    const body = text(<InContext />);
-    expect(body).toContain(IN_CONTEXT.headline);
-    expect(body).toContain(IN_CONTEXT.videoCaption.title);
-    for (const chapter of IN_CONTEXT.chapters) expect(body).toContain(chapter);
+describe("WhatItIs", () => {
+  it("renders the headline and all three media slots", () => {
+    const body = text(<WhatItIs />);
+    expect(body).toContain(WHAT_IT_IS.headline);
+    const html = markup(<WhatItIs />);
+    for (const m of [WHAT_IT_IS.hero, ...WHAT_IT_IS.pair]) {
+      expect(html).toContain(`aria-label="Placeholder: ${m.slot}"`);
+    }
   });
 
-  it("marks exactly one chapter tab selected on first paint", () => {
-    const html = markup(<InContext />);
-    expect(html.match(/aria-selected="true"/g)).toHaveLength(1);
-  });
-});
-
-describe("Capabilities", () => {
-  const html = markup(<Capabilities />);
-
-  it("renders every capability title", () => {
-    const body = text(<Capabilities />);
-    for (const { title } of CAPABILITIES) expect(body).toContain(title);
-  });
-
-  it("renders every capability body server-side so the copy is crawlable", () => {
-    const body = text(<Capabilities />);
-    for (const { body: copy } of CAPABILITIES) expect(body).toContain(copy);
-  });
-
-  it("marks exactly one row current on first paint", () => {
-    expect(html.match(/aria-current="true"/g)).toHaveLength(1);
+  it("sets the overlay headline over the lead video", () => {
+    expect(text(<WhatItIs />)).toContain(WHAT_IT_IS.hero.overlay);
   });
 });
 
-describe("TeachingFlow", () => {
-  it("renders the headline, the lab cta and all three steps in order", () => {
-    const body = text(<TeachingFlow />);
-    expect(body).toContain(TEACHING.headline);
-    expect(body).toContain(TEACHING.cta.label);
+describe("TheFace", () => {
+  const html = markup(<TheFace />);
 
-    const positions = TEACHING.steps.map((s) => body.indexOf(s.title));
-    expect(positions.every((p) => p >= 0)).toBe(true);
-    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  it("renders the headline, body and playground cta", () => {
+    const body = text(<TheFace />);
+    expect(body).toContain(THE_FACE.headline);
+    expect(body).toContain(THE_FACE.cta.label);
+  });
+
+  it("labels all four expressions", () => {
+    const body = text(<TheFace />);
+    for (const { label } of FACE_GRID) expect(body).toContain(label);
+  });
+
+  it("draws each face with the real svg renderer rather than mock shapes", () => {
+    expect(html.match(/<svg/g)?.length).toBeGreaterThanOrEqual(FACE_GRID.length);
+    expect(html).toContain('viewBox="0 0 440 320"');
   });
 });
 
-describe("HardwareDetails", () => {
-  it("renders every spec label and value", () => {
-    const body = text(<HardwareDetails />);
+describe("Hardware", () => {
+  it("renders every mosaic card title and caption", () => {
+    const body = text(<Hardware />);
     expect(body).toContain(HARDWARE.headline);
+    for (const { title, caption } of HARDWARE.cards) {
+      expect(body).toContain(title);
+      expect(body).toContain(caption);
+    }
+  });
+
+  it("renders every spec label and value", () => {
+    const body = text(<Hardware />);
     for (const { label, value } of HARDWARE.specs) {
       expect(body).toContain(label);
       expect(body).toContain(value);
@@ -112,25 +110,23 @@ describe("HardwareDetails", () => {
   });
 });
 
-describe("FaqAndClosing", () => {
-  const html = markup(<FaqAndClosing />);
-  const body = text(<FaqAndClosing />);
-
-  it("renders every question and answer", () => {
-    for (const { question, answer } of FAQ) {
-      expect(body).toContain(question);
-      expect(body).toContain(answer);
-    }
+describe("TeachIt", () => {
+  it("renders the headline, cta and all three steps in order", () => {
+    const body = text(<TeachIt />);
+    expect(body).toContain(TEACH_IT.headline);
+    expect(body).toContain(TEACH_IT.cta.label);
+    const positions = TEACH_IT.steps.map((s) => body.indexOf(s.title));
+    expect(positions.every((p) => p >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
+});
 
-  it("renders answers in details elements so they work without javascript", () => {
-    expect(html.match(/<details\b/g)).toHaveLength(FAQ.length);
-  });
-
-  it("renders the closing price card and its cta", () => {
+describe("Closing", () => {
+  it("renders both headline lines, the price and the cta", () => {
+    const body = text(<Closing />);
+    for (const line of CLOSING.headline) expect(body).toContain(line);
     expect(body).toContain(CLOSING.price);
-    expect(body).toContain(CLOSING.headline);
-    expect(html).toContain(`href="${CLOSING.cta.href}"`);
+    expect(markup(<Closing />)).toContain(`href="${CLOSING.cta.href}"`);
   });
 });
 
@@ -138,25 +134,25 @@ describe("SiteFooter", () => {
   const html = markup(<SiteFooter />);
 
   it("opens every social link in a new tab with a safe rel", () => {
-    for (const { href } of SOCIAL_LINKS) expect(html).toContain(`href="${href}"`);
-    expect(html.match(/target="_blank"/g)).toHaveLength(SOCIAL_LINKS.length);
-    expect(html.match(/rel="noreferrer noopener"/g)).toHaveLength(SOCIAL_LINKS.length);
+    for (const { href } of FOOTER.socials) expect(html).toContain(`href="${href}"`);
+    expect(html.match(/target="_blank"/g)).toHaveLength(FOOTER.socials.length);
+    expect(html.match(/rel="noreferrer noopener"/g)).toHaveLength(FOOTER.socials.length);
   });
 
-  it("labels every social link for screen readers", () => {
-    for (const { label } of SOCIAL_LINKS) expect(html).toContain(`aria-label="${label}"`);
+  it("renders the draft note", () => {
+    expect(text(<SiteFooter />)).toContain(FOOTER.note);
   });
 });
 
 describe("placeholder media", () => {
-  it("labels each placeholder as an image for assistive tech", () => {
+  it("labels every placeholder as an image for assistive tech", () => {
     const all = [
       markup(<Hero />),
-      markup(<InContext />),
-      markup(<Capabilities />),
-      markup(<TeachingFlow />),
-      markup(<HardwareDetails />),
+      markup(<WhatItIs />),
+      markup(<Hardware />),
+      markup(<TeachIt />),
+      markup(<Closing />),
     ].join("");
-    expect(all.match(/aria-label="Placeholder: /g)?.length).toBe(5);
+    expect(all.match(/aria-label="Placeholder: /g)?.length).toBe(10);
   });
 });

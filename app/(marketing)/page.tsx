@@ -1,19 +1,19 @@
-import Capabilities from "@/components/marketing/Capabilities";
-import FaqAndClosing from "@/components/marketing/FaqAndClosing";
-import HardwareDetails from "@/components/marketing/HardwareDetails";
+import Closing from "@/components/marketing/Closing";
+import Hardware from "@/components/marketing/Hardware";
 import Hero from "@/components/marketing/Hero";
-import InContext from "@/components/marketing/InContext";
-import TeachingFlow from "@/components/marketing/TeachingFlow";
+import TeachIt from "@/components/marketing/TeachIt";
+import TheFace from "@/components/marketing/TheFace";
+import WhatItIs from "@/components/marketing/WhatItIs";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <InContext />
-      <Capabilities />
-      <TeachingFlow />
-      <HardwareDetails />
-      <FaqAndClosing />
+      <WhatItIs />
+      <TheFace />
+      <Hardware />
+      <TeachIt />
+      <Closing />
     </>
   );
 }

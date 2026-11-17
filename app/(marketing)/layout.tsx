@@ -1,12 +1,12 @@
+import PillNav from "@/components/marketing/PillNav";
 import SiteFooter from "@/components/marketing/SiteFooter";
-import Navbar from "./Navbar";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <Navbar />
-      <main className="flex-1">{children}</main>
+    <div className="font-display">
+      <PillNav />
+      <main className="flex-1 pt-0">{children}</main>
       <SiteFooter />
-    </>
+    </div>
   );
 }

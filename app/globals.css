@@ -6,11 +6,23 @@
   --foreground: #e8e8e6;
   --accent: #E8BE3C;
   --nav-h: 60px;
+
+  /* ── Landing page palette ── */
+  --ink: #121113;
+  --cream: #f7f5ee;
+  --sage: #a8b088;
+  --lime: #b4e533;
 }
 
 @theme inline {
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-dm-mono);
+  --font-display: var(--font-outfit);
+
+  --color-ink: var(--ink);
+  --color-cream: var(--cream);
+  --color-sage: var(--sage);
+  --color-lime: var(--lime);
 }
 
 /* ── Base ── */
@@ -20,9 +32,13 @@ body {
   font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
 }
 
-/* ── Offset fixed navbar ── */
-main {
-  padding-top: var(--nav-h);
+/* ── Offset fixed navbar ──
+   Layered so a route that supplies its own offset (the landing page's
+   floating nav) can override it with a utility class. */
+@layer base {
+  main {
+    padding-top: var(--nav-h);
+  }
 }
 
 /* ── Pulse animation for status dot ── */
