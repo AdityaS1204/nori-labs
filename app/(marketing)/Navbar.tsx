@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -8,18 +8,11 @@ import { Menu01Icon, Cancel01Icon, ArrowUpRight01Icon } from '@hugeicons/core-fr
 import gsap from 'gsap';
 
 import AuthButton from '@/components/auth/AuthButton';
-
-const NAV_LINKS = [
-  { href: '#platform', label: 'Platform' },
-  { href: '#research', label: 'Research' },
-  { href: '#products', label: 'Products' },
-  { href: '#company', label: 'Company' },
-];
+import { HERO, NAV_LINKS } from '@/lib/landing-content';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen]         = useState(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   /* ── Scroll detection ── */
   useEffect(() => {
@@ -134,10 +127,10 @@ export default function Navbar() {
           </span>
           <AuthButton />
           <Link
-            href="#demo"
+            href={HERO.primaryCta.href}
             className="inline-flex items-center gap-1.5 px-[14px] py-[7px] text-[12px] tracking-[0.06em] uppercase text-[#0d0d0e] bg-[#E8BE3C] rounded-[4px] no-underline transition-[box-shadow,transform] duration-150 hover:shadow-[0_0_0_1px_#E8BE3C,0_4px_16px_rgba(232,190,60,0.25)] motion-safe:active:scale-[0.96]"
           >
-            Request Demo
+            {HERO.primaryCta.label}
             <HugeiconsIcon icon={ArrowUpRight01Icon} size={12} color="currentColor" />
           </Link>
         </div>
@@ -215,11 +208,11 @@ export default function Navbar() {
           </span>
           <AuthButton className="self-start" />
           <Link
-            href="#demo"
+            href={HERO.primaryCta.href}
             onClick={() => setOpen(false)}
             className="flex items-center justify-center gap-1.5 px-[14px] py-3 text-[12px] tracking-[0.06em] uppercase text-[#0d0d0e] bg-[#E8BE3C] rounded-[4px] no-underline transition-transform duration-150 motion-safe:active:scale-[0.96]"
           >
-            Request Demo
+            {HERO.primaryCta.label}
             <HugeiconsIcon icon={ArrowUpRight01Icon} size={12} color="currentColor" />
           </Link>
         </div>

@@ -1,3 +1,4 @@
+import SiteFooter from "@/components/marketing/SiteFooter";
 import Navbar from "./Navbar";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
@@ -5,6 +6,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
     <>
       <Navbar />
       <main className="flex-1">{children}</main>
+      <SiteFooter />
     </>
   );
 }
