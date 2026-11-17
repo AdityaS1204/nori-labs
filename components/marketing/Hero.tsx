@@ -43,10 +43,10 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1180px] px-5 pb-16 sm:px-8">
+      <div className="px-3 pb-16">
         <MediaCard media={HERO.media} />
 
-        <dl className="m-0 mt-5 grid gap-px overflow-hidden rounded-[10px] bg-white/[0.08] sm:grid-cols-3">
+        <dl className="m-0 mt-3 grid gap-px overflow-hidden rounded-[10px] bg-white/[0.08] sm:grid-cols-3">
           {SUPPORTING_DETAILS.map(({ label, value }) => (
             <div key={label} className="flex flex-col gap-1.5 bg-ink px-5 py-4">
               <dt className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">
