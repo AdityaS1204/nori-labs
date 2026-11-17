@@ -17,7 +17,7 @@ export default function FaqAndClosing() {
           <div className="flex flex-col border-t border-white/[0.07]">
             {FAQ.map(({ question, answer }) => (
               <details key={question} className="group border-b border-white/[0.07]">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14.5px] font-medium tracking-[-0.01em] text-white/80 transition-colors duration-150 marker:hidden hover:text-white [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14.5px] font-medium tracking-[-0.01em] text-white/80 transition-colors duration-150 hover:text-white [&::-webkit-details-marker]:hidden">
                   {question}
                   <span
                     className="relative h-3.5 w-3.5 shrink-0 text-white/40 transition-colors duration-150 group-hover:text-white/70 group-open:text-[#E8BE3C]"
