@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "name": "Nori demo moods",
+  "defaultState": "neutral",
+  "background": "#000000",
+  "fit": "contain",
+  "transition": {
+    "spring": { "stiffness": 300, "damping": 30, "mass": 0.6 }
+  },
+  "ambient": {
+    "blink": {
+      "closeMs": 70,
+      "closeEase": "easeIn",
+      "openMs": 130,
+      "openEase": "easeOut",
+      "closedScale": 0.06,
+      "everyMs": [2500, 6000]
+    },
+    "gaze": {
+      "mode": "random",
+      "clamp": [24, 16],
+      "retargetMs": [650, 2850],
+      "spring": { "stiffness": 140, "damping": 18, "mass": 0.6 }
+    }
+  },
+  "states": [
+    {
+      "id": "neutral",
+      "label": "Neutral",
+      "face": {
+        "color": "#eaf3ff",
+        "glow": 1,
+        "gap": 150,
+        "left": { "width": 50, "height": 132, "radius": 14, "openness": 1, "tilt": 0, "offsetY": 0, "shape": "bar", "thickness": 16 },
+        "right": { "width": 50, "height": 132, "radius": 14, "openness": 1, "tilt": 0, "offsetY": 0, "shape": "bar", "thickness": 16 },
+        "browsEnabled": false,
+        "leftBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 },
+        "rightBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 }
+      }
+    },
+    {
+      "id": "happy",
+      "label": "Happy",
+      "face": {
+        "color": "#9bffd0",
+        "glow": 1.2,
+        "gap": 160,
+        "left": { "width": 64, "height": 70, "radius": 14, "openness": 1, "tilt": 0, "offsetY": 6, "shape": "arc", "thickness": 16 },
+        "right": { "width": 64, "height": 70, "radius": 14, "openness": 1, "tilt": 0, "offsetY": 6, "shape": "arc", "thickness": 16 },
+        "browsEnabled": false,
+        "leftBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 },
+        "rightBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 }
+      }
+    },
+    {
+      "id": "surprised",
+      "label": "Surprised",
+      "face": {
+        "color": "#eaf3ff",
+        "glow": 1.4,
+        "gap": 190,
+        "left": { "width": 92, "height": 92, "radius": 46, "openness": 1, "tilt": 0, "offsetY": 4, "shape": "circle", "thickness": 16 },
+        "right": { "width": 92, "height": 92, "radius": 46, "openness": 1, "tilt": 0, "offsetY": 4, "shape": "circle", "thickness": 16 },
+        "browsEnabled": true,
+        "leftBrow": { "length": 60, "thickness": 10, "radius": 5, "arc": 10, "tilt": 0, "offsetY": 34 },
+        "rightBrow": { "length": 60, "thickness": 10, "radius": 5, "arc": 10, "tilt": 0, "offsetY": 34 }
+      }
+    },
+    {
+      "id": "sleepy",
+      "label": "Sleepy",
+      "face": {
+        "color": "#8fa6c4",
+        "glow": 0.35,
+        "gap": 150,
+        "left": { "width": 60, "height": 110, "radius": 20, "openness": 0.16, "tilt": 0, "offsetY": 26, "shape": "oval", "thickness": 16 },
+        "right": { "width": 60, "height": 110, "radius": 20, "openness": 0.16, "tilt": 0, "offsetY": 26, "shape": "oval", "thickness": 16 },
+        "browsEnabled": false,
+        "leftBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 },
+        "rightBrow": { "length": 56, "thickness": 10, "radius": 5, "arc": 0, "tilt": 0, "offsetY": 22 }
+      }
+    },
+    {
+      "id": "angry",
+      "label": "Angry",
+      "face": {
+        "color": "#ff7a6b",
+        "glow": 1.1,
+        "gap": 150,
+        "left": { "width": 54, "height": 118, "radius": 12, "openness": 0.8, "tilt": 10, "offsetY": 0, "shape": "angle", "thickness": 18 },
+        "right": { "width": 54, "height": 118, "radius": 12, "openness": 0.8, "tilt": 10, "offsetY": 0, "shape": "angle", "thickness": 18 },
+        "browsEnabled": true,
+        "leftBrow": { "length": 62, "thickness": 11, "radius": 5, "arc": -6, "tilt": -20, "offsetY": 18 },
+        "rightBrow": { "length": 62, "thickness": 11, "radius": 5, "arc": -6, "tilt": -20, "offsetY": 18 }
+      }
+    }
+  ]
+}

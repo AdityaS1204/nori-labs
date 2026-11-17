@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Built kiosk renderer, shipped inside the Python package.
+    "sdk/python/nori_face/_bundle/**",
   ]),
 ]);
 

@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# built kiosk renderer (run: bun run build:renderer)
+sdk/python/nori_face/_bundle/

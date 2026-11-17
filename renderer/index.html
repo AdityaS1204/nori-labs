@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>Nori Face</title>
+    <style>
+      html,
+      body,
+      #root {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+      }
+      /* The panel is the robot's face, never a pointer surface. */
+      body {
+        cursor: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .nori-stage {
+        height: 100%;
+        width: 100%;
+        display: block;
+      }
+      .nori-face {
+        height: 100%;
+        width: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
