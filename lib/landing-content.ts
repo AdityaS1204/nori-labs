@@ -17,7 +17,9 @@ export type MediaSlot = {
   tone: MediaTone;
   /** CSS aspect-ratio value, e.g. "16 / 9". */
   ratio: string;
-  /** Renders a play affordance for slots that will hold video. */
+  /** Real footage. When set, the card plays it instead of drawing a placeholder. */
+  src?: string;
+  /** Renders a play affordance for slots still waiting on footage. */
   video?: boolean;
   /** Large headline set over the card, bottom-left. */
   overlay?: string;
@@ -38,7 +40,7 @@ export type NavItem = { href: string; label: string; items: readonly NavChild[] 
 export const NAV_LINKS: readonly NavItem[] = [
   {
     href: "#what-it-is",
-    label: "A3",
+    label: "Nori A3",
     items: [
       { href: "#what-it-is", label: "What it is", note: "A bimanual robot you teach by showing." },
       { href: "#the-face", label: "The face", note: "A screen that looks back at you." },
@@ -65,7 +67,7 @@ export const NAV_LINKS: readonly NavItem[] = [
   },
 ];
 
-export const NAV_CTA = { label: "Contact", href: "/preorder" } as const;
+export const NAV_CTA = { label: "Order Now", href: "/preorder" } as const;
 
 export const HERO = {
   label: "Nori A3 / home robot",
@@ -74,10 +76,11 @@ export const HERO = {
   primaryCta: { label: "Learn more", href: "#what-it-is" },
   secondaryCta: { label: "Watch it at home", href: "#what-it-is" },
   media: {
-    slot: "Video slot 01 — hero reveal, 4:3",
-    note: "Black, matt body. Eyes track the room. Full robot in frame.",
+    slot: "Nori A3 — face and torso",
+    note: "Eyes open, tracking the room.",
     tone: "sage",
     ratio: "16 / 9",
+    src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1794986979/nori-main_cxujza.mp4",
   } satisfies MediaSlot,
 } as const;
 
@@ -91,20 +94,20 @@ export const WHAT_IT_IS = {
   label: "01 / what it is",
   headline: "Nori A3 is a bimanual home robot that you teach by showing it, not by programming it.",
   hero: {
-    slot: "Video slot 02 — A3 in a real kitchen",
-    note: "Full kitchen sequence. Unbroken take.",
+    slot: "In the kitchen",
+    note: "Cooking, unbroken take.",
     tone: "haze",
     ratio: "16 / 9",
-    video: true,
+    src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1794986981/Kitchen-2_t9xejc.mp4",
     overlay: "Helping in the kitchen.",
   } satisfies MediaSlot,
   pair: [
     {
-      slot: "Video slot 03 — uncut fold, 1x speed",
-      note: "One continuous take, folding laundry.",
+      slot: "Loading dishes",
+      note: "Two cuts, three seconds.",
       tone: "sage",
       ratio: "16 / 10",
-      video: true,
+      src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1794986979/kitchen-1_egkrs0.mp4",
     },
     {
       slot: "Video slot 04 — close-up of the hand",

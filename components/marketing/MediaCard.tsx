@@ -1,4 +1,5 @@
 import type { MediaSlot, MediaTone } from "@/lib/landing-content";
+import MediaVideo from "./MediaVideo";
 
 const TONES: Record<MediaTone, string> = {
   sage: "bg-sage",
@@ -19,27 +20,39 @@ type Props = {
 };
 
 /**
- * Placeholder for a product photo or video: a toned colour block carrying the
- * slot marker and shot note from the design. Dropping real footage in later is
- * a swap of the inner fill, leaving the frame and markers in place.
+ * A media card: real footage when the slot has a `src`, otherwise a toned
+ * colour block carrying the slot marker and shot note from the design. The tone
+ * doubles as the backdrop a video sits on while it loads.
  */
 export default function MediaCard({ media, className = "" }: Props) {
-  const marker = MARKER[media.tone];
+  const filled = Boolean(media.src);
+  // Over footage the markers need their own contrast, not the tone's.
+  const marker = filled ? "text-white/70" : MARKER[media.tone];
 
   return (
     <figure
       className={`group relative m-0 overflow-hidden rounded-[10px] ${TONES[media.tone]} ${className}`}
       style={{ aspectRatio: media.ratio }}
-      role="img"
-      aria-label={`Placeholder: ${media.slot}`}
+      {...(filled ? {} : { role: "img", "aria-label": `Placeholder: ${media.slot}` })}
     >
+      {media.src ? <MediaVideo src={media.src} label={media.slot} /> : null}
+
+      {filled ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 z-[5] h-2/5 bg-gradient-to-t from-black/55 to-transparent"
+        />
+      ) : null}
+
       <figcaption
-        className={`absolute left-3 top-3 z-10 rounded-[3px] bg-black/[0.07] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${marker}`}
+        className={`absolute left-3 top-3 z-10 rounded-[3px] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${
+          filled ? "bg-black/35 backdrop-blur-sm" : "bg-black/[0.07]"
+        } ${marker}`}
       >
         {media.slot}
       </figcaption>
 
-      {media.video ? (
+      {media.video && !filled ? (
         <span
           className="absolute left-1/2 top-1/2 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-[0_2px_12px_rgba(0,0,0,0.18)] transition-transform duration-200 motion-safe:group-hover:scale-105"
           aria-hidden="true"

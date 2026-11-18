@@ -17,6 +17,7 @@ import {
   TEACH_IT,
   THE_FACE,
   WHAT_IT_IS,
+  type MediaSlot,
 } from "@/lib/landing-content";
 import { FACE_GRID } from "@/lib/landing-faces";
 
@@ -62,7 +63,8 @@ describe("WhatItIs", () => {
     expect(body).toContain(WHAT_IT_IS.headline);
     const html = markup(<WhatItIs />);
     for (const m of [WHAT_IT_IS.hero, ...WHAT_IT_IS.pair]) {
-      expect(html).toContain(`aria-label="Placeholder: ${m.slot}"`);
+      if (m.src) expect(html).toContain(`src="${m.src}"`);
+      else expect(html).toContain(`aria-label="Placeholder: ${m.slot}"`);
     }
   });
 
@@ -169,15 +171,45 @@ describe("scroll entrance", () => {
   });
 });
 
-describe("placeholder media", () => {
-  it("labels every placeholder as an image for assistive tech", () => {
-    const all = [
-      markup(<Hero />),
-      markup(<WhatItIs />),
-      markup(<Hardware />),
-      markup(<TeachIt />),
-      markup(<Closing />),
-    ].join("");
-    expect(all.match(/aria-label="Placeholder: /g)?.length).toBe(10);
+const ALL_SLOTS: MediaSlot[] = [
+  HERO.media,
+  WHAT_IT_IS.hero,
+  ...WHAT_IT_IS.pair,
+  ...HARDWARE.cards.map((c) => c.media),
+  TEACH_IT.media,
+  CLOSING.media,
+];
+
+const everySection = [
+  markup(<Hero />),
+  markup(<WhatItIs />),
+  markup(<Hardware />),
+  markup(<TeachIt />),
+  markup(<Closing />),
+].join("");
+
+describe("media slots", () => {
+  it("labels every unfilled slot as an image for assistive tech", () => {
+    const empty = ALL_SLOTS.filter((m) => !m.src).length;
+    expect(empty).toBeGreaterThan(0);
+    expect(everySection.match(/aria-label="Placeholder: /g)?.length).toBe(empty);
+  });
+
+  it("renders a looping muted video for every filled slot", () => {
+    const filled = ALL_SLOTS.filter((m) => m.src);
+    expect(filled.length).toBe(3);
+    for (const m of filled) {
+      expect(everySection).toContain(`src="${m.src}"`);
+      // A filled slot is footage, not a placeholder graphic.
+      expect(everySection).not.toContain(`aria-label="Placeholder: ${m.slot}"`);
+    }
+    expect(everySection.match(/<video/g)?.length).toBe(filled.length);
+    expect(everySection.match(/loop=""|loop/g)?.length).toBeGreaterThanOrEqual(filled.length);
+  });
+
+  it("never shows the play affordance on a slot that already has footage", () => {
+    for (const m of ALL_SLOTS) {
+      if (m.src) expect(m.video).toBeFalsy();
+    }
   });
 });
