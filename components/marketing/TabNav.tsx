@@ -80,7 +80,7 @@ export default function TabNav() {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
       <div
-        className="pointer-events-auto w-full max-w-[720px] overflow-hidden rounded-[18px] border border-white/[0.09] bg-[#1c1b1e]/95 backdrop-blur-md"
+        className="pointer-events-auto w-full max-w-[580px] overflow-hidden rounded-[18px] border border-white/[0.09] bg-[#1c1b1e]/95 backdrop-blur-md"
         onMouseLeave={scheduleClose}
       >
         {/* Tab row */}
@@ -169,11 +169,12 @@ export default function TabNav() {
               transition={reduced ? { duration: 0 } : { duration: 0.3, ease: EASE }}
               className="hidden overflow-hidden sm:block"
             >
-              <div className="p-2">
+              {/* No top padding: the panel edge must meet the tab base for the fillets to read. */}
+              <div className="px-2 pb-2">
                 <motion.ul
                   key={active.href}
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={reduced ? { duration: 0 } : { duration: 0.22, ease: EASE }}
                   className="m-0 flex list-none flex-col gap-1 rounded-[14px] p-2"
                   style={{ backgroundColor: PANEL }}
