@@ -9,3 +9,12 @@ Before declaring a feature or task complete:
 5. Report: commands run, test results, files changed and any known limitations.
 
 Do not mark a task complete if tests fail, the dev server has console errors, or acceptance criteria are unverified.
+
+## Commit Rules
+
+Before committing any change, first test the implementation if test of that implementation is possible. 
+Make commits in such a way that each implementation has a non-breaking rollback. 
+
+## Commenting Rules
+
+Make as few comments as possible in the codebase. Only comment on functions which are harder or longer to understand for users and agents. If adding a comment in the codebase, make sure it is crisp and to the point. 
