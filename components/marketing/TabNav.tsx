@@ -10,21 +10,10 @@ import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
-/**
- * Geometry read off the supplied clip-path, which is a 65.56px-tall tab with a
- * 16px top corner and a 12px fillet. Scaled to our 44px tab: 44/65.56 = 0.671.
- */
 const TAB_RADIUS = 11;
 const FILLET = 8;
 
-/** Grace period so sweeping the cursor between tabs does not flash the panel shut. */
 const CLOSE_DELAY = 140;
-
-/**
- * The clip-path is a single path with a single fill: the tab bump and the panel
- * are one surface, not a tinted tab resting on a panel. Both use SURFACE, and
- * SHELL sits a step lighter behind them so the bump reads as raised.
- */
 const SURFACE = "#171717";
 const SHELL = "#262626";
 
@@ -40,8 +29,12 @@ function Fillet({ side }: { side: "left" | "right" }) {
   const at = side === "left" ? "0% 0%" : "100% 0%";
   const mask = `radial-gradient(circle ${FILLET}px at ${at}, transparent 99%, #000 100%)`;
 
+  // `layout` is what keeps the curve a curve: the parent moves between tabs of
+  // different widths by animating scale, which would stretch an unflagged child
+  // into an ellipse. Flagged children get that scale counteracted each frame.
   return (
-    <span
+    <motion.span
+      layout
       aria-hidden="true"
       className="pointer-events-none absolute bottom-0"
       style={{
@@ -84,9 +77,11 @@ export default function TabNav() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  // Critically damped (damping = 2*sqrt(stiffness*mass)), so the highlight
+  // settles on the new tab without the overshoot that reads as a wobble.
   const spring = reduced
     ? { duration: 0 }
-    : { type: "spring" as const, stiffness: 420, damping: 38, mass: 0.7 };
+    : { type: "spring" as const, stiffness: 400, damping: 40, mass: 1 };
 
   const active = openIdx === null ? null : NAV_LINKS[openIdx];
 
@@ -137,8 +132,11 @@ export default function TabNav() {
                     href={item.href}
                     aria-expanded={isOpen}
                     onClick={() => setOpenIdx(null)}
-                    className={`relative z-10 flex items-center whitespace-nowrap px-4 pb-2 text-[13px] no-underline transition-colors duration-150 ${
-                      isOpen ? "font-medium text-white" : "text-white/55 hover:text-white"
+                    // Weight stays constant across states: bolding on activation
+                    // would re-measure the tab mid-slide, so the highlight would
+                    // be chasing a target that moves under it.
+                    className={`relative z-10 flex items-center whitespace-nowrap px-4 pb-2 text-[13px] font-medium no-underline transition-colors duration-150 ${
+                      isOpen ? "text-white" : "text-white/55 hover:text-white"
                     }`}
                   >
                     {item.label}
@@ -177,6 +175,7 @@ export default function TabNav() {
           {active ? (
             <motion.div
               key="panel"
+              layout
               initial={{ height: 0 }}
               animate={{ height: "auto" }}
               exit={{ height: 0 }}
@@ -185,10 +184,12 @@ export default function TabNav() {
             >
               {/* Flush with the tab base, pulled 1px under it so no hairline shows at the seam. */}
               <div className="-mt-px px-2 pb-2">
+                {/* No key here on purpose: keying by tab would unmount the list and
+                    remount it at opacity 0, flashing an empty panel for a frame
+                    between tabs. Reusing it lets the rows swap under a height
+                    that `layout` morphs. */}
                 <motion.ul
-                  key={active.href}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  layout
                   transition={reduced ? { duration: 0 } : { duration: 0.22, ease: EASE }}
                   className="m-0 flex list-none flex-col gap-1 rounded-[12px] p-2"
                   style={{ backgroundColor: SURFACE }}
