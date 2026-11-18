@@ -31,11 +31,39 @@ export type TeachingStep = { title: string; body: string };
 
 export type Spec = { label: string; value: string };
 
-export const NAV_LINKS = [
-  { href: "#what-it-is", label: "A3" },
-  { href: "#the-face", label: "In the home" },
-  { href: "#hardware", label: "Hardware" },
-] as const;
+export type NavChild = { href: string; label: string; note: string };
+
+export type NavItem = { href: string; label: string; items: readonly NavChild[] };
+
+export const NAV_LINKS: readonly NavItem[] = [
+  {
+    href: "#what-it-is",
+    label: "A3",
+    items: [
+      { href: "#what-it-is", label: "What it is", note: "A bimanual robot you teach by showing." },
+      { href: "#the-face", label: "The face", note: "A screen that looks back at you." },
+      { href: "#order", label: "Price and shipping", note: "$1,688, no deposit. Fall 2026." },
+    ],
+  },
+  {
+    href: "#the-face",
+    label: "In the home",
+    items: [
+      { href: "#what-it-is", label: "Everyday tasks", note: "Kitchen, tidying, laundry, dishes." },
+      { href: "#teach-it", label: "Teach it a skill", note: "Demonstrate once, it generalises." },
+      { href: "/library", label: "Expression library", note: "Faces the community has made." },
+    ],
+  },
+  {
+    href: "#hardware",
+    label: "Hardware",
+    items: [
+      { href: "#hardware", label: "What is on the body", note: "Arms, lidar, cameras, battery." },
+      { href: "/lab", label: "Nori Lab", note: "Train, operate and manage your robot." },
+      { href: "#order", label: "Order an A3", note: "Assembled in San Francisco." },
+    ],
+  },
+];
 
 export const NAV_CTA = { label: "Contact", href: "/preorder" } as const;
 

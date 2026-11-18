@@ -75,9 +75,20 @@ describe("landing content", () => {
       CLOSING.cta,
       ...FOOTER.links,
     ];
-    for (const { href } of links) {
+    const all = [...links, ...NAV_LINKS.flatMap((n) => n.items)];
+    for (const { href } of all) {
       if (href.startsWith("#")) expect(ids).toContain(href.slice(1));
       else expect(href.startsWith("/")).toBe(true);
+    }
+  });
+
+  it("gives every nav tab a dropdown with distinct children", () => {
+    expect(NAV_LINKS.length).toBeGreaterThanOrEqual(3);
+    for (const item of NAV_LINKS) {
+      expect(item.items.length).toBeGreaterThanOrEqual(2);
+      const labels = item.items.map((c) => c.label);
+      expect(new Set(labels).size).toBe(labels.length);
+      for (const child of item.items) expect(child.note.length).toBeGreaterThan(0);
     }
   });
 
