@@ -10,18 +10,31 @@ import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
-/** Geometry from the supplied clip-path, scaled to a 44px tab. */
-const TAB_RADIUS = 12;
-const FILLET = 10;
+/**
+ * Geometry read off the supplied clip-path, which is a 65.56px-tall tab with a
+ * 16px top corner and a 12px fillet. Scaled to our 44px tab: 44/65.56 = 0.671.
+ */
+const TAB_RADIUS = 11;
+const FILLET = 8;
 
 /** Grace period so sweeping the cursor between tabs does not flash the panel shut. */
 const CLOSE_DELAY = 140;
 
-const PANEL = "#0f0e10";
+/**
+ * The clip-path is a single path with a single fill: the tab bump and the panel
+ * are one surface, not a tinted tab resting on a panel. Both use SURFACE, and
+ * SHELL sits a step lighter behind them so the bump reads as raised.
+ */
+const SURFACE = "#171717";
+const SHELL = "#262626";
 
 /**
- * Concave corner flaring the active tab base into the panel below. Drawn in the
- * panel colour, so the panel top edge appears to curve up into the tab.
+ * Concave corner flaring the tab base out into the panel top edge. Same fill as
+ * both, so the three elements read as the one shape the clip-path describes.
+ *
+ * The box sits beside the tab, its bottom on the panel edge. Masking out a
+ * circle centred on its outer top corner leaves exactly the curved triangle
+ * that meets the tab on one side and the panel on the other.
  */
 function Fillet({ side }: { side: "left" | "right" }) {
   const at = side === "left" ? "0% 0%" : "100% 0%";
@@ -35,7 +48,7 @@ function Fillet({ side }: { side: "left" | "right" }) {
         width: FILLET,
         height: FILLET,
         [side === "left" ? "right" : "left"]: "100%",
-        backgroundColor: PANEL,
+        backgroundColor: SURFACE,
         maskImage: mask,
         WebkitMaskImage: mask,
       }}
@@ -80,7 +93,8 @@ export default function TabNav() {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
       <div
-        className="pointer-events-auto w-full max-w-[580px] overflow-hidden rounded-[18px] border border-white/[0.09] bg-[#1c1b1e]/95 backdrop-blur-md"
+        className="pointer-events-auto w-full max-w-[580px] overflow-hidden rounded-[18px] border border-white/[0.07] backdrop-blur-md"
+        style={{ backgroundColor: SHELL }}
         onMouseLeave={scheduleClose}
       >
         {/* Tab row */}
@@ -109,7 +123,7 @@ export default function TabNav() {
                       transition={spring}
                       className="absolute inset-0"
                       style={{
-                        backgroundColor: "var(--lime)",
+                        backgroundColor: SURFACE,
                         borderTopLeftRadius: TAB_RADIUS,
                         borderTopRightRadius: TAB_RADIUS,
                       }}
@@ -124,7 +138,7 @@ export default function TabNav() {
                     aria-expanded={isOpen}
                     onClick={() => setOpenIdx(null)}
                     className={`relative z-10 flex items-center whitespace-nowrap px-4 pb-2 text-[13px] no-underline transition-colors duration-150 ${
-                      isOpen ? "font-medium text-ink" : "text-white/55 hover:text-white"
+                      isOpen ? "font-medium text-white" : "text-white/55 hover:text-white"
                     }`}
                   >
                     {item.label}
@@ -169,15 +183,15 @@ export default function TabNav() {
               transition={reduced ? { duration: 0 } : { duration: 0.3, ease: EASE }}
               className="hidden overflow-hidden sm:block"
             >
-              {/* No top padding: the panel edge must meet the tab base for the fillets to read. */}
-              <div className="px-2 pb-2">
+              {/* Flush with the tab base, pulled 1px under it so no hairline shows at the seam. */}
+              <div className="-mt-px px-2 pb-2">
                 <motion.ul
                   key={active.href}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={reduced ? { duration: 0 } : { duration: 0.22, ease: EASE }}
-                  className="m-0 flex list-none flex-col gap-1 rounded-[14px] p-2"
-                  style={{ backgroundColor: PANEL }}
+                  className="m-0 flex list-none flex-col gap-1 rounded-[12px] p-2"
+                  style={{ backgroundColor: SURFACE }}
                   role="list"
                 >
                   {active.items.map((child) => (
@@ -185,7 +199,8 @@ export default function TabNav() {
                       <Link
                         href={child.href}
                         onClick={() => setOpenIdx(null)}
-                        className="group flex items-center justify-between gap-4 rounded-[10px] bg-white/[0.04] px-4 py-3 no-underline transition-colors duration-150 hover:bg-white/[0.08]"
+                        className="group flex items-center justify-between gap-4 rounded-[8px] px-4 py-3 no-underline transition-colors duration-150 hover:brightness-125"
+                        style={{ backgroundColor: SHELL }}
                       >
                         <span className="flex flex-col gap-0.5">
                           <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
