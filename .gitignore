@@ -43,3 +43,7 @@ next-env.d.ts
 
 # built kiosk renderer (run: bun run build:renderer)
 sdk/python/nori_face/_bundle/
+
+# local-only: schema/migrations run by hand, and agent planning docs
+/supabase/
+/plans/
