@@ -5,6 +5,7 @@ import {
   FOOTER,
   HARDWARE,
   HERO,
+  LIMITS,
   NAV_CTA,
   NAV_LINKS,
   SUPPORTING_DETAILS,
@@ -64,7 +65,7 @@ describe("landing content", () => {
   });
 
   it("numbers the sections in the order the page renders them", () => {
-    const numbers = [WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, CLOSING].map((s) =>
+    const numbers = [WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, LIMITS, CLOSING].map((s) =>
       Number(s.label.slice(0, 2)),
     );
     expect(numbers.every(Number.isFinite)).toBe(true);
@@ -93,7 +94,15 @@ describe("landing content", () => {
   });
 
   it("points every in-page link at a section that exists", () => {
-    const ids = new Set(["intro", "what-it-is", "the-face", "hardware", "teach-it", "order"]);
+    const ids = new Set([
+      "intro",
+      "what-it-is",
+      "the-face",
+      "hardware",
+      "teach-it",
+      "limits",
+      "order",
+    ]);
     const links = [
       ...NAV_LINKS,
       NAV_CTA,
@@ -173,7 +182,15 @@ describe("landing content", () => {
   });
 
   it("has no unresolved copy placeholders", () => {
-    const blob = JSON.stringify({ HERO, WHAT_IT_IS, THE_FACE, HARDWARE, TEACH_IT, CLOSING });
+    const blob = JSON.stringify({
+      HERO,
+      WHAT_IT_IS,
+      THE_FACE,
+      HARDWARE,
+      TEACH_IT,
+      LIMITS,
+      CLOSING,
+    });
     expect(blob).not.toMatch(/lorem|ipsum|TODO|TBD|xxx/i);
   });
 });
