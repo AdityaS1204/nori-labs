@@ -9,6 +9,13 @@
 /** Background treatment for a media card, matching the design's colour blocks. */
 export type MediaTone = "sage" | "ink" | "haze";
 
+/**
+ * How a clip was captured. Printed on the card when set, so a viewer is never
+ * left guessing whether the robot drove itself. Left unset until the real label
+ * for a clip is confirmed: a wrong tag is worse than no tag.
+ */
+export type CaptureMode = "autonomous" | "teleoperated";
+
 export type MediaSlot = {
   /** Mono slot marker printed in the card's top-left corner. */
   slot: string;
@@ -23,6 +30,7 @@ export type MediaSlot = {
   video?: boolean;
   /** Large headline set over the card, bottom-left. */
   overlay?: string;
+  capture?: CaptureMode;
 };
 
 /**
@@ -73,7 +81,7 @@ export const NAV_LINKS: readonly NavItem[] = [
     },
     items: [
       { href: "#what-it-is", label: "What it is", note: "A bimanual robot you teach by showing." },
-      { href: "#the-face", label: "The face", note: "A screen that looks back at you." },
+      { href: "#the-face", label: "The face", note: "How you tell what it is doing." },
       { href: "#order", label: "Price and shipping", note: "$1,688, no deposit. Fall 2026." },
     ],
   },
@@ -151,12 +159,14 @@ export const HERO = {
   label: "Nori A3 / home robot",
   headline: [
     ["Meet", { mark: true }, "Nori A3."],
-    ["It looks back."],
+    ["You teach it by showing."],
   ] satisfies readonly (readonly HeadlinePart[])[],
   mark: MARK,
-  body: "A home robot with an animated face. Shipping fall 2026, at $1,688.",
-  primaryCta: { label: "Learn more", href: "#what-it-is" },
-  secondaryCta: { label: "Watch it at home", href: "#what-it-is" },
+  body:
+    "A two-armed robot you train at home, then share what it learns. $1,688, " +
+    "shipping fall 2026, assembled in San Francisco.",
+  primaryCta: { label: "Order an A3", href: "/preorder" },
+  secondaryCta: { label: "See it work", href: "#what-it-is" },
   media: {
     slot: "Nori A3 — face and torso",
     note: "Eyes open, tracking the room.",
@@ -202,17 +212,18 @@ export const WHAT_IT_IS = {
 } as const;
 
 export const THE_FACE = {
-  label: "02 / the face",
-  headline: "Its face is a screen.",
+  label: "03 / the face",
+  headline: "Its face tells you what it's doing.",
   body:
-    "A3's head screen shows animated eyes. The four expressions below are drawn by " +
-    "the same renderer that runs on the robot, straight from the expression " +
-    "playground.",
+    "A robot you teach is a robot that runs on its own, so you need to read it at a " +
+    "glance. A3's head screen maps its state onto two eyes: waiting, listening, " +
+    "working, stuck. The four below are drawn by the same renderer that runs on the " +
+    "robot, straight from the expression playground.",
   cta: { label: "Open the playground", href: "/lab" },
 } as const;
 
 export const HARDWARE = {
-  label: "03 / hardware",
+  label: "04 / hardware",
   headline: "What is on the body.",
   cards: [
     {
@@ -256,13 +267,13 @@ export const HARDWARE = {
 } as const;
 
 export const TEACH_IT = {
-  label: "04 / teach it",
+  label: "02 / teach it",
   headline: "Teach it a skill.",
   body:
     "Train your Nori at home, share its skills anywhere. The Nori Lab laptop app " +
     "records demonstrations and trains skills, then publishes them to the Skills " +
     "Marketplace.",
-  cta: { label: "Learn more", href: "/lab" },
+  cta: { label: "Browse the library", href: "/library" },
   media: {
     slot: "Video slot 09 — screen recording, Nori Lab",
     note: "Screen recording of the Nori Lab app.",
@@ -272,26 +283,30 @@ export const TEACH_IT = {
   } satisfies MediaSlot,
   steps: [
     {
-      title: "Show it once",
+      title: "Demonstrate",
       body: "Guide the arms through the task. The app records motion, camera feeds and grip.",
     },
     {
-      title: "Nori learns the skill",
+      title: "Train in Nori Lab",
       body: "A few demonstrations are enough to generalise to new positions and lighting.",
     },
     {
-      title: "Share it anywhere",
+      title: "Run it",
+      body: "Set the skill going and read the face: it reports what the robot is doing.",
+    },
+    {
+      title: "Share it",
       body: "Publish to the Skills Marketplace, or install a skill someone else trained.",
     },
   ] satisfies TeachingStep[],
 } as const;
 
 export const CLOSING = {
-  label: "05 / order",
+  label: "06 / order",
   headline: ["Full price,", "no deposit."],
   price: "$1,688",
   body: "Reserve a NORI A3 at the launch price. Ships Fall 2026, assembled in San Francisco.",
-  cta: { label: "Learn more", href: "/preorder" },
+  cta: { label: "Order an A3", href: "/preorder" },
   media: {
     slot: "Image slot 10 — full robot, three-quarter",
     tone: "sage",

@@ -30,7 +30,7 @@ describe("landing content", () => {
     expect(WHAT_IT_IS.pair).toHaveLength(2);
     expect(HARDWARE.cards).toHaveLength(4);
     expect(FACE_GRID).toHaveLength(4);
-    expect(TEACH_IT.steps).toHaveLength(3);
+    expect(TEACH_IT.steps).toHaveLength(4);
     expect(SUPPORTING_DETAILS).toHaveLength(3);
     expect(HARDWARE.specs.length).toBeGreaterThanOrEqual(4);
   });
@@ -47,6 +47,29 @@ describe("landing content", () => {
     expect(HERO.body).toMatch(/fall 2026/i);
     expect(CLOSING.body).toMatch(/Fall 2026/);
     expect(CLOSING.headline.join(" ")).toMatch(/no deposit/i);
+  });
+
+  // A review found "Learn more" on three of the five buttons; it said nothing
+  // about where it went, on a page whose job is an order.
+  // Repeating one label for one destination is fine; the same label on two
+  // different destinations is what made the buttons unreadable.
+  it("gives every call to action a label that names its destination", () => {
+    const ctas = [HERO.primaryCta, HERO.secondaryCta, THE_FACE.cta, TEACH_IT.cta, CLOSING.cta];
+    const byLabel = new Map<string, string>();
+    for (const { label, href } of ctas) {
+      expect(label).not.toMatch(/learn more/i);
+      expect(byLabel.get(label) ?? href).toBe(href);
+      byLabel.set(label, href);
+    }
+  });
+
+  it("numbers the sections in the order the page renders them", () => {
+    const numbers = [WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, CLOSING].map((s) =>
+      Number(s.label.slice(0, 2)),
+    );
+    expect(numbers.every(Number.isFinite)).toBe(true);
+    expect([...numbers].sort((a, b) => a - b)).toEqual(numbers);
+    expect(new Set(numbers).size).toBe(numbers.length);
   });
 
   it("carries the real hardware specs through unchanged", () => {

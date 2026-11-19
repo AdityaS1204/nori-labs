@@ -56,6 +56,16 @@ export default function MediaCard({ media, className = "", cornerRadius = RADIUS
         {media.slot}
       </figcaption>
 
+      {media.capture ? (
+        <span
+          className={`absolute right-3 top-3 z-10 rounded-[3px] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${
+            filled ? "bg-black/45 text-white/85 backdrop-blur-sm" : "bg-black/[0.1] text-ink/70"
+          }`}
+        >
+          {media.capture}
+        </span>
+      ) : null}
+
       {media.video && !filled ? (
         <span
           className="absolute left-1/2 top-1/2 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-[0_2px_12px_rgba(0,0,0,0.18)] transition-transform duration-200 motion-safe:group-hover:scale-105"
