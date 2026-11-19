@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import NoriFace from "@/components/robot-face/NoriFace";
+import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
 import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
 import { THE_FACE } from "@/lib/landing-content";
@@ -28,13 +28,21 @@ export default function TheFace() {
 
         <Reveal delay={0.05}>
           <ul className="m-0 grid list-none grid-cols-2 gap-4 p-0 lg:grid-cols-4" role="list">
-            {FACE_GRID.map(({ id, label, face }) => (
+            {FACE_GRID.map(({ id, label, note, face }) => (
               <Squircle cornerRadius={RADIUS.surface} key={id}>
+                {/* Gaze is bound to the card, so each face tracks the pointer over itself. */}
                 <li className="flex flex-col items-center gap-5 bg-[#1c1b1e] px-4 py-8">
-                  <NoriFace face={face} width={120} />
-                  <span className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">
-                    {label}
-                  </span>
+                  <div className="h-[87px] w-[120px]">
+                    <NoriFaceLive face={face} gazeMode="cursor" className="h-full w-full" />
+                  </div>
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
+                      {label}
+                    </span>
+                    <span className="max-w-[22ch] font-display text-[12.5px] leading-snug text-white/45">
+                      {note}
+                    </span>
+                  </div>
                 </li>
               </Squircle>
             ))}

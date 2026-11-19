@@ -91,9 +91,12 @@ describe("TheFace", () => {
     expect(body).toContain(THE_FACE.cta.label);
   });
 
-  it("labels all four expressions", () => {
+  it("labels all four states and says what the robot is doing in each", () => {
     const body = text(<TheFace />);
-    for (const { label } of FACE_GRID) expect(body).toContain(label);
+    for (const { label, note } of FACE_GRID) {
+      expect(body).toContain(label);
+      expect(body).toContain(note);
+    }
   });
 
   it("draws each face with the real svg renderer rather than mock shapes", () => {

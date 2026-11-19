@@ -154,10 +154,21 @@ describe("landing content", () => {
   it("gives every grid face a unique id and a visible eye", () => {
     const ids = FACE_GRID.map((f) => f.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const { face, label } of FACE_GRID) {
+    for (const { face, label, note } of FACE_GRID) {
       expect(label.length).toBeGreaterThan(0);
+      expect(note.length).toBeGreaterThan(0);
       expect(face.left.openness).toBeGreaterThan(0);
       expect(face.right.openness).toBeGreaterThan(0);
+    }
+  });
+
+  // The face is the robot's status display, so the grid shows what it is doing,
+  // not how it feels. Moods belong in the community library instead.
+  it("shows the face as robot states rather than moods", () => {
+    expect(FACE_GRID.map((f) => f.id)).toEqual(["idle", "listening", "working", "needs-help"]);
+    for (const { label, note } of FACE_GRID) {
+      expect(label).not.toMatch(/happy|sad|sleepy|angry|excited/i);
+      expect(note).not.toMatch(/happy|sad|sleepy|angry|excited/i);
     }
   });
 
