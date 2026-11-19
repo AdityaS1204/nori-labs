@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import NavVideo from "./NavVideo";
 import TabNav from "./TabNav";
 import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 
@@ -37,5 +38,37 @@ describe("TabNav", () => {
 
   it("labels the mobile toggle for screen readers", () => {
     expect(html).toContain('aria-label="Open navigation menu"');
+  });
+
+  it("keeps the tab preview out of the closed nav", () => {
+    expect(html).not.toContain("<video");
+  });
+});
+
+describe("NavVideo", () => {
+  const media = NAV_LINKS.find((item) => item.media)?.media;
+  const markup = media ? decode(renderToStaticMarkup(<NavVideo media={media} />)) : "";
+
+  it("is wired to a tab", () => {
+    expect(media).toBeDefined();
+  });
+
+  it("waits for a hover before fetching the clip", () => {
+    expect(markup).toContain('preload="none"');
+    expect(markup).toContain(`poster="${media!.poster}"`);
+    expect(markup).not.toContain("autoplay");
+  });
+
+  it("starts muted and looping, with the sound toggle labelled", () => {
+    expect(markup).toContain("loop");
+    expect(markup).toContain('aria-label="Unmute video"');
+    expect(markup).toContain('aria-pressed="false"');
+  });
+
+  // The label is on the video for assistive tech; the tooltip that paints it
+  // on screen belongs to the hover state and must not ship with the panel.
+  it("holds the tooltip back until the pointer arrives", () => {
+    expect(markup.match(new RegExp(media!.label, "g"))).toHaveLength(1);
+    expect(markup).not.toContain("bg-black px-4");
   });
 });

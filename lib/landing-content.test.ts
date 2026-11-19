@@ -98,6 +98,16 @@ describe("landing content", () => {
     }
   });
 
+  it("gives the tab preview a clip and a poster", () => {
+    const media = NAV_LINKS.filter((item) => item.media).map((item) => item.media!);
+    expect(media).toHaveLength(1);
+    for (const { src, poster, label } of media) {
+      expect(src).toMatch(/^https:\/\/.+\.mp4$/);
+      expect(poster).toMatch(/^https:\/\//);
+      expect(label.length).toBeGreaterThan(0);
+    }
+  });
+
   it("uses absolute https urls for socials", () => {
     expect(FOOTER.socials.length).toBeGreaterThan(0);
     for (const { href, label } of FOOTER.socials) {

@@ -9,6 +9,7 @@ import { ArrowUpRight01Icon, Cancel01Icon, Menu01Icon } from "@hugeicons/core-fr
 import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
 import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
+import NavVideo from "./NavVideo";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -90,7 +91,7 @@ export default function TabNav() {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
       <div
-        className="pointer-events-auto w-full max-w-[580px] overflow-hidden rounded-[20px] border border-white/[0.07] backdrop-blur-md"
+        className="pointer-events-auto w-full max-w-[640px] overflow-hidden rounded-[20px] border border-white/[0.07] backdrop-blur-md"
         style={{ backgroundColor: SHELL }}
         onMouseLeave={scheduleClose}
       >
@@ -192,41 +193,48 @@ export default function TabNav() {
                     remount it at opacity 0, flashing an empty panel for a frame
                     between tabs. Reusing it lets the rows swap under a height
                     that `layout` morphs. */}
-                <motion.ul
+                <motion.div
                   layout
                   transition={reduced ? { duration: 0 } : { duration: 0.22, ease: EASE }}
-                  className="m-0 flex list-none flex-col gap-1 rounded-[16px] p-2"
+                  className={`grid gap-2 rounded-[16px] p-2 ${
+                    active.media ? "sm:grid-cols-[1.15fr_1fr]" : ""
+                  }`}
                   style={{ backgroundColor: SURFACE }}
-                  role="list"
                 >
-                  {active.items.map((child) => (
-                    <li key={child.href + child.label}>
-                      <Squircle cornerRadius={RADIUS.control}>
-                        <Link
-                          href={child.href}
-                          onClick={() => setOpenIdx(null)}
-                          className="group flex items-center justify-between gap-4 px-4 py-3 no-underline transition-colors duration-150 hover:brightness-125"
-                          style={{ backgroundColor: SHELL }}
-                        >
-                          <span className="flex flex-col gap-0.5">
-                            <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
-                              {child.label}
+                  <ul className="m-0 flex list-none flex-col gap-1 p-0" role="list">
+                    {active.items.map((child) => (
+                      <li key={child.href + child.label}>
+                        <Squircle cornerRadius={RADIUS.control}>
+                          <Link
+                            href={child.href}
+                            onClick={() => setOpenIdx(null)}
+                            className="group flex items-center justify-between gap-4 px-4 py-3 no-underline transition-colors duration-150 hover:brightness-125"
+                            style={{ backgroundColor: SHELL }}
+                          >
+                            <span className="flex flex-col gap-0.5">
+                              <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
+                                {child.label}
+                              </span>
+                              <span className="text-[12px] leading-snug text-white/40">
+                                {child.note}
+                              </span>
                             </span>
-                            <span className="text-[12px] leading-snug text-white/40">
-                              {child.note}
-                            </span>
-                          </span>
-                          <HugeiconsIcon
-                            icon={ArrowUpRight01Icon}
-                            size={18}
-                            color="currentColor"
-                            className="shrink-0 text-white/30 transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-lime"
-                          />
-                        </Link>
-                      </Squircle>
-                    </li>
-                  ))}
-                </motion.ul>
+                            <HugeiconsIcon
+                              icon={ArrowUpRight01Icon}
+                              size={18}
+                              color="currentColor"
+                              className="shrink-0 text-white/30 transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-lime"
+                            />
+                          </Link>
+                        </Squircle>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {active.media ? (
+                    <NavVideo media={active.media} className="h-full min-h-[136px]" />
+                  ) : null}
+                </motion.div>
               </div>
             </motion.div>
           ) : null}

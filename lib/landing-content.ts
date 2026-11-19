@@ -41,12 +41,26 @@ export type Spec = { label: string; value: string };
 
 export type NavChild = { href: string; label: string; note: string };
 
-export type NavItem = { href: string; label: string; items: readonly NavChild[] };
+/** Footage shown beside a tab's links, previewed on hover. */
+export type NavMedia = { src: string; poster: string; label: string };
+
+export type NavItem = {
+  href: string;
+  label: string;
+  items: readonly NavChild[];
+  media?: NavMedia;
+};
 
 export const NAV_LINKS: readonly NavItem[] = [
   {
     href: "#what-it-is",
     label: "Nori A3",
+    media: {
+      src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795064823/linkedin-video_lflhe1.mp4",
+      poster:
+        "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_1,c_fill,w_640,h_360,q_auto,f_jpg/v1795064823/linkedin-video_lflhe1.jpg",
+      label: "Launch Video",
+    },
     items: [
       { href: "#what-it-is", label: "What it is", note: "A bimanual robot you teach by showing." },
       { href: "#the-face", label: "The face", note: "A screen that looks back at you." },
