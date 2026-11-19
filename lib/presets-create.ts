@@ -43,6 +43,7 @@ export async function createPreset(input: NewPresetInput): Promise<Preset> {
       cover_state_id: input.coverStateId,
       accent: input.accent,
       category: input.category ?? null,
+      render: input.render,
       user_id: user.id,
       is_public: input.isPublic,
     })

@@ -9,6 +9,7 @@
  */
 
 import { NEUTRAL_FACE, type NoriFaceParams } from "@/lib/nori-face";
+import { DEFAULT_RENDER, type RenderConfig } from "@/lib/render-target";
 
 export interface Author {
   name: string;
@@ -41,6 +42,8 @@ export interface Preset {
   accent: string;
   /** Optional free-form category, used by the library filter chips. */
   category?: string;
+  /** Engine this preset is posed for, and its tween settings. */
+  render: RenderConfig;
   likes: number;
   /** Whether the preset is shared to the community library (vs. private). */
   isPublic: boolean;
@@ -86,6 +89,7 @@ export function clonePreset(p: Preset): Preset {
   return {
     ...p,
     author: { ...p.author },
+    render: { ...p.render },
     states: p.states.map((s) => ({ ...s, face: cloneFace(s.face) })),
   };
 }
@@ -126,6 +130,7 @@ export function newPreset(): Preset {
     states: [first],
     coverStateId: first.id,
     accent: NEUTRAL_FACE.color,
+    render: { ...DEFAULT_RENDER },
     likes: 0,
     isPublic: false,
     ownerId: null,

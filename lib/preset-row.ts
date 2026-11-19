@@ -7,6 +7,7 @@
 
 import type { Author, ExpressionState, Preset } from "@/lib/presets";
 import type { NoriEyeParams } from "@/lib/nori-face";
+import { normalizeRender, type RenderConfig } from "@/lib/render-target";
 
 /** Shape of a row in the `presets` table. */
 export interface PresetRow {
@@ -22,6 +23,8 @@ export interface PresetRow {
   likes: number | null;
   user_id: string | null;
   is_public: boolean | null;
+  /** RenderConfig; null on rows written before the column existed. */
+  render: RenderConfig | null;
   created_at: string;
 }
 
@@ -44,6 +47,8 @@ export interface NewPresetInput {
   category?: string;
   /** Share to the community library (false = private, the default). */
   isPublic: boolean;
+  /** Engine the preset is posed for, and its tween settings. */
+  render: RenderConfig;
 }
 
 /** Backfill eye fields added after a row may have been written (shape/weight). */
@@ -74,6 +79,7 @@ export function rowToPreset(row: PresetRow): Preset {
     coverStateId: row.cover_state_id,
     accent: row.accent ?? "#eaf3ff",
     category: row.category ?? undefined,
+    render: normalizeRender(row.render),
     likes: row.likes ?? 0,
     isPublic: row.is_public ?? false,
     ownerId: row.user_id,

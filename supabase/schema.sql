@@ -16,11 +16,14 @@ create table if not exists presets (
   likes          integer not null default 0,
   user_id        uuid references auth.users (id) on delete set null,
   is_public      boolean not null default false,
+  render         jsonb not null              -- RenderConfig: {target,durationMs,ease}
+                 default '{"target":"web","durationMs":220,"ease":"easeInOut"}'::jsonb,
   created_at     timestamptz not null default now()
 );
 
 -- For an existing table created before auth, see
--- supabase/migrations/0001_auth_and_visibility.sql (adds the two columns).
+-- supabase/migrations/0001_auth_and_visibility.sql (adds the two columns), then
+-- supabase/migrations/0002_render_target.sql (adds `render`).
 
 create index if not exists presets_created_at_idx on presets (created_at desc);
 create index if not exists presets_user_id_idx on presets (user_id);

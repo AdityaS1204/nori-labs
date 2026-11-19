@@ -286,6 +286,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
           states: preset.states,
           coverStateId: preset.coverStateId,
           accent: coverState(preset).face.color,
+          render: preset.render,
           isPublic: meta.isPublic,
         });
         setSaveOpen(false);
