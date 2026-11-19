@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import NavVideo from "./NavVideo";
 import TabNav from "./TabNav";
-import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
+import { MARK, NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 
 const decode = (html: string) =>
   html.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, "&");
@@ -17,6 +17,13 @@ describe("TabNav", () => {
     for (const { label } of NAV_LINKS) expect(text).toContain(label);
     expect(text).toContain(NAV_CTA.label);
     expect(html).toContain(`href="${NAV_CTA.href}"`);
+  });
+
+  it("sets the clover beside the wordmark", () => {
+    const brand = html.slice(html.indexOf("<a"), html.indexOf("</a>"));
+    expect(brand).toContain(`src="${MARK.src}"`);
+    expect(brand).toContain('aria-hidden="true"');
+    expect(brand).toContain('aria-label="Nori Robotics home"');
   });
 
   it("links each tab at its own section", () => {

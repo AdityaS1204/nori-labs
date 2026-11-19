@@ -10,6 +10,7 @@ import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
 import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 import NavVideo from "./NavVideo";
+import NoriMark from "./NoriMark";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
 
@@ -104,8 +105,9 @@ export default function TabNav() {
           <Link
             href="/"
             aria-label="Nori Robotics home"
-            className="flex shrink-0 items-center px-2 pb-2 text-[15px] font-semibold tracking-[-0.01em] text-white no-underline transition-opacity duration-150 hover:opacity-70"
+            className="flex shrink-0 items-center gap-1.5 px-2 pb-2 text-[15px] font-semibold tracking-[-0.01em] text-white no-underline transition-opacity duration-150 hover:opacity-70"
           >
+            <NoriMark className="h-[17px] w-[17px]" />
             nori
           </Link>
 

@@ -137,17 +137,23 @@ export const NAV_LINKS: readonly NavItem[] = [
 
 export const NAV_CTA = { label: "Order Now", href: "/preorder" } as const;
 
+/**
+ * The nori clover, in the hero headline and beside the nav wordmark. One url
+ * for both, so the two share a cache entry. Delivered at display size: the
+ * source png is 1.1MB, this is ~18KB, and f_webp rather than f_auto, which
+ * hands back a jpeg and flattens the transparency.
+ */
+export const MARK = {
+  src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/w_240,q_auto,f_webp/v1795067350/Glossy_Neon_Green_Clover_Logo_k7snhs.png",
+} as const;
+
 export const HERO = {
   label: "Nori A3 / home robot",
   headline: [
     ["Meet", { mark: true }, "Nori A3."],
     ["It looks back."],
   ] satisfies readonly (readonly HeadlinePart[])[],
-  // Delivered at display size: the source png is 1.1MB, this is ~18KB. f_webp
-  // rather than f_auto, which hands back a jpeg and flattens the transparency.
-  mark: {
-    src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/w_240,q_auto,f_webp/v1795067350/Glossy_Neon_Green_Clover_Logo_k7snhs.png",
-  },
+  mark: MARK,
   body: "A home robot with an animated face. Shipping fall 2026, at $1,688.",
   primaryCta: { label: "Learn more", href: "#what-it-is" },
   secondaryCta: { label: "Watch it at home", href: "#what-it-is" },
