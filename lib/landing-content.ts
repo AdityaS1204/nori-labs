@@ -25,6 +25,12 @@ export type MediaSlot = {
   overlay?: string;
 };
 
+/**
+ * A headline line, in order. Text parts carry no implicit spacing: the inline
+ * mark supplies its own side margins, so words sit flush against it.
+ */
+export type HeadlinePart = string | { mark: true };
+
 export type SupportingDetail = { label: string; value: string };
 
 export type HardwareCard = { title: string; caption: string; media: MediaSlot };
@@ -71,7 +77,14 @@ export const NAV_CTA = { label: "Order Now", href: "/preorder" } as const;
 
 export const HERO = {
   label: "Nori A3 / home robot",
-  headline: ["Meet A3.", "It looks back."],
+  headline: [
+    ["Meet", { mark: true }, "A3."],
+    ["It looks back."],
+  ] satisfies readonly (readonly HeadlinePart[])[],
+  // Delivered at display size: the source png is 1.6MB, this is a few KB.
+  mark: {
+    src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/w_240,q_auto,f_webp/v1795065970/Glossy_Neon_Green_Clover_Icon_f6uca6.png",
+  },
   body: "A home robot with an animated face. Shipping fall 2026, at $1,688.",
   primaryCta: { label: "Learn more", href: "#what-it-is" },
   secondaryCta: { label: "Watch it at home", href: "#what-it-is" },

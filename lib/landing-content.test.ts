@@ -35,6 +35,12 @@ describe("landing content", () => {
     expect(HARDWARE.specs.length).toBeGreaterThanOrEqual(4);
   });
 
+  it("places the inline mark inside the first headline line", () => {
+    expect(HERO.headline[0].some((p) => typeof p !== "string" && p.mark)).toBe(true);
+    expect(HERO.headline[1].every((p) => typeof p === "string")).toBe(true);
+    expect(HERO.mark.src).toMatch(/^https:\/\/res\.cloudinary\.com\//);
+  });
+
   it("keeps the production price and ship date consistent everywhere", () => {
     expect(HERO.body).toContain("$1,688");
     expect(CLOSING.price).toBe("$1,688");
