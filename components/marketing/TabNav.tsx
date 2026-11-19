@@ -242,7 +242,9 @@ export default function TabNav() {
                   </ul>
 
                   {preview ? (
-                    <NavVideo media={preview} className="h-full min-h-[136px]" />
+                    // Grid stretch sizes this, not `h-full`: a percentage height
+                    // against an auto row collapses to its (absolute) content.
+                    <NavVideo media={preview} className="self-stretch min-h-[136px]" />
                   ) : null}
                 </motion.div>
               </div>
