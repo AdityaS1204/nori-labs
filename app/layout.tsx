@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, DM_Mono, Outfit } from "next/font/google";
+import { Space_Grotesk, DM_Mono } from "next/font/google";
+import "allo-font";
 import "./globals.css";
 import AuthProvider from "@/components/auth/AuthProvider";
 
@@ -13,12 +14,6 @@ const dmMono = DM_Mono({
   variable: "--font-dm-mono",
   subsets: ["latin"],
   weight: ["300", "400", "500"],
-});
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${dmMono.variable} ${outfit.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${dmMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>

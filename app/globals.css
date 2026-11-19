@@ -17,7 +17,7 @@
 @theme inline {
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-dm-mono);
-  --font-display: var(--font-outfit);
+  --font-display: "Allo", var(--font-space-grotesk), sans-serif;
 
   --color-ink: var(--ink);
   --color-cream: var(--cream);
@@ -38,6 +38,15 @@ body {
 @layer base {
   main {
     padding-top: var(--nav-h);
+  }
+}
+
+/* A squircle's clip-path cuts off an outside focus ring, so squircled
+   controls draw theirs just inside the shape instead. */
+@layer base {
+  [data-squircle]:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -3px;
   }
 }
 
