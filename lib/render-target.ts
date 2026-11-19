@@ -191,13 +191,22 @@ export function faceForTarget(face: NoriFaceParams, target: RenderTarget): NoriF
   };
 }
 
-/** Whether a face uses anything `target` would have to drop. */
-export function facesLostDetail(face: NoriFaceParams, target: RenderTarget): boolean {
+/**
+ * The label of an eye shape `target` cannot draw, or null.
+ *
+ * Deliberately narrower than "anything that changes": the neutral face ships
+ * with a glow, so flagging that would fire on every preset and say nothing.
+ * A hand-pasted SVG silently becoming a bar is the surprise worth naming.
+ */
+export function droppedShapeIn(
+  face: NoriFaceParams,
+  target: RenderTarget,
+): string | null {
   const caps = capabilities(target);
-  if (!caps.glow && face.glow > 0) return true;
-  return [face.left, face.right].some(
-    (eye) => !caps.shapes.includes(eye.shape ?? "bar") || (!caps.customSvg && !!eye.customSvg),
+  const dropped = [face.left, face.right].find(
+    (eye) => !caps.shapes.includes(eye.shape ?? "bar"),
   );
+  return dropped ? shapeLabel(dropped.shape) : null;
 }
 
 /** Shape label for a message naming what a target replaced. */

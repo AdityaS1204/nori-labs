@@ -14,7 +14,8 @@ import {
   newState,
   type Preset,
 } from "@/lib/presets";
-import { packFileName, presetToPack } from "@/lib/face-pack";
+import { packFileName, presetToPack, transitionFor } from "@/lib/face-pack";
+import { faceForTarget, type RenderConfig, type RenderTarget } from "@/lib/render-target";
 import { createPreset } from "@/lib/presets-create";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLabActions } from "@/components/playground/LabActionsProvider";
@@ -29,6 +30,7 @@ import ControlPanel from "@/components/controls/ControlPanel";
 import FaceControls from "./FaceControls";
 import StatePicker from "./StatePicker";
 import SavePresetDialog, { type SavePresetMeta } from "./SavePresetDialog";
+import TargetToggle from "./TargetToggle";
 import NoriFaceLive, { type GazeMode } from "@/components/robot-face/NoriFaceLive";
 
 interface ExpressionEditorProps {
@@ -123,6 +125,16 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
       }));
     },
     [activeId],
+  );
+
+  const onRenderChange = useCallback(
+    (patch: Partial<RenderConfig>) =>
+      setPreset((p) => ({ ...p, render: { ...p.render, ...patch } })),
+    [],
+  );
+  const onTargetChange = useCallback(
+    (target: RenderTarget) => onRenderChange({ target }),
+    [onRenderChange],
   );
 
   const onGlobalChange = useCallback(
@@ -301,8 +313,18 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
     [preset, router],
   );
 
+  /* The authored face is never clamped in state — only on the way to the
+     preview and the export — so flipping the target back restores it. */
+  const previewFace = useMemo(
+    () => faceForTarget(active.face, preset.render.target),
+    [active.face, preset.render.target],
+  );
+  const previewTransition = useMemo(() => transitionFor(preset.render), [preset.render]);
+
   const toolbar = (
     <div className="flex flex-col gap-2">
+      <TargetToggle target={preset.render.target} onChange={onTargetChange} />
+
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -359,6 +381,8 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
         <ControlPanel title="Expression" toolbar={toolbar}>
           <FaceControls
             face={active.face}
+            render={preset.render}
+            onRenderChange={onRenderChange}
             linked={linked}
             onToggleLink={setLinked}
             onGlobalChange={onGlobalChange}
@@ -382,8 +406,13 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
         style={{ paddingTop: 0 }}
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-white/[0.06] px-4 py-2.5">
-          <span className="text-[11px] font-semibold tracking-[0.08em] text-white/35">
+          <span className="flex items-center gap-2 text-[11px] font-semibold tracking-[0.08em] text-white/35">
             Preview
+            {preset.render.target === "lvgl" && (
+              <span className="rounded border border-[#E8BE3C]/25 bg-[#E8BE3C]/10 px-1.5 py-0.5 text-[10px] tracking-[0.06em] text-[#E8BE3C]/90">
+                LVGL
+              </span>
+            )}
           </span>
           <span className="text-[11px] font-medium text-white/40">
             {active.label}
@@ -391,7 +420,8 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
         </div>
         <div className="min-h-0 flex-1 bg-black p-4">
           <NoriFaceLive
-            face={active.face}
+            face={previewFace}
+            transition={previewTransition}
             gazeMode={gazeMode}
             className="h-full w-full"
           />

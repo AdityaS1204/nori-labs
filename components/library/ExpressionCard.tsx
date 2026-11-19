@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { coverState, type Preset } from "@/lib/presets";
+import { faceForTarget } from "@/lib/render-target";
 import NoriFaceLive from "@/components/robot-face/NoriFaceLive";
 
 interface ExpressionCardProps {
@@ -20,6 +21,8 @@ export default function ExpressionCard({
 }: ExpressionCardProps) {
   const { id, name, accent } = preset;
   const cover = coverState(preset);
+  // Show an LVGL preset the way the robot will draw it, not with a web glow.
+  const face = faceForTarget(cover.face, preset.render.target);
 
   return (
     <Link
@@ -37,7 +40,7 @@ export default function ExpressionCard({
           }}
         />
         <NoriFaceLive
-          face={cover.face}
+          face={face}
           gazeMode="random"
           className="absolute inset-0 h-full w-full p-5"
         />

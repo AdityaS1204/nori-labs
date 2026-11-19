@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  EYE_SHAPES,
   eyeRenderMode,
   type EyeShape,
   type NoriBrowParams,
+  type EyeShapeDef,
   type NoriEyeParams,
   type NoriFaceParams,
 } from "@/lib/nori-face";
@@ -12,12 +12,22 @@ import {
   BROW_FIELDS,
   EYE_FIELDS,
   EYE_THICKNESS_FIELD,
-  GLOBAL_FIELDS,
+  TWEEN_MS_FIELD,
+  globalFieldsFor,
   type BrowFieldKey,
   type EyeFieldKey,
   type EyeSide,
   type GlobalFieldKey,
 } from "./faceFields";
+import {
+  EASINGS,
+  UNSUPPORTED_IN_LVGL,
+  capabilities,
+  droppedShapeIn,
+  shapesFor,
+  type Easing,
+  type RenderConfig,
+} from "@/lib/render-target";
 import type { GazeMode } from "@/components/robot-face/NoriFaceLive";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InformationCircleIcon } from "@hugeicons/core-free-icons";
@@ -30,6 +40,9 @@ import ControlSection from "@/components/controls/ControlSection";
 
 interface FaceControlsProps {
   face: NoriFaceParams;
+  /** Target the controls are constrained to, plus its tween settings. */
+  render: RenderConfig;
+  onRenderChange: (patch: Partial<RenderConfig>) => void;
   linked: boolean;
   onToggleLink: (value: boolean) => void;
   onGlobalChange: (key: GlobalFieldKey, value: number) => void;
@@ -116,14 +129,16 @@ function EyeGroupLabel({ children }: { children: React.ReactNode }) {
 /** A row of glyph buttons for choosing the eye silhouette. */
 function ShapePicker({
   shape,
+  shapes,
   onPick,
 }: {
   shape: EyeShape;
+  shapes: EyeShapeDef[];
   onPick: (shape: EyeShape) => void;
 }) {
   return (
     <div className={`${ROW_BASE} flex items-center gap-1 px-2`}>
-      {EYE_SHAPES.map((s) => {
+      {shapes.map((s) => {
         const active = s.id === shape;
         return (
           <button
@@ -211,21 +226,28 @@ function CustomSvgInput({
 /** Shape picker + custom input + geometry sliders + weight, for one eye. */
 function EyeGroup({
   eye,
+  shapes,
+  customSvgAllowed,
   onEyeChange,
   onShape,
   onCustom,
 }: {
   eye: NoriEyeParams;
+  shapes: EyeShapeDef[];
+  customSvgAllowed: boolean;
   onEyeChange: (key: EyeFieldKey, value: number) => void;
   onShape: (shape: EyeShape) => void;
   onCustom: (svg: string, viewBox?: [number, number, number, number]) => void;
 }) {
-  const shape = eye.shape ?? "bar";
-  const isCustom = shape === "custom";
+  // An unsupported shape (a pasted SVG in LVGL mode) reads as the bar the
+  // preview and the export fall back to, so the picker cannot show nothing.
+  const authored = eye.shape ?? "bar";
+  const shape = shapes.some((s) => s.id === authored) ? authored : "bar";
+  const isCustom = shape === "custom" && customSvgAllowed;
   const strokeWeightShown = eyeRenderMode(shape) === "stroke";
   return (
     <>
-      <ShapePicker shape={shape} onPick={onShape} />
+      <ShapePicker shape={shape} shapes={shapes} onPick={onShape} />
       {isCustom && <CustomSvgInput value={eye.customSvg} onChange={onCustom} />}
       <EyeSliders eye={eye} onChange={onEyeChange} />
       {strokeWeightShown && (
@@ -242,13 +264,78 @@ function EyeGroup({
   );
 }
 
+const EASE_LABEL: Record<Easing, string> = {
+  linear: "Linear",
+  easeIn: "In",
+  easeOut: "Out",
+  easeInOut: "In-out",
+};
+
+/** Four-way easing picker for the LVGL tween. */
+function EasingPicker({
+  ease,
+  onPick,
+}: {
+  ease: Easing;
+  onPick: (ease: Easing) => void;
+}) {
+  return (
+    <div className={`${ROW_BASE} flex items-center gap-1 px-2`}>
+      {EASINGS.map((e) => {
+        const active = e === ease;
+        return (
+          <button
+            key={e}
+            type="button"
+            onClick={() => onPick(e)}
+            aria-pressed={active}
+            className={`h-7 flex-1 rounded-md text-[11px] font-medium transition-colors ${
+              active
+                ? "bg-[#E8BE3C]/15 text-[#E8BE3C]"
+                : "text-white/50 hover:bg-white/[0.06] hover:text-white/80"
+            }`}
+          >
+            {EASE_LABEL[e]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * What LVGL mode leaves out, stated plainly, plus a pointed line when a shape
+ * the device cannot rasterise has been replaced — so the changed preview reads
+ * as a constraint rather than a bug.
+ */
+function LvglNotice({ droppedShape }: { droppedShape: string | null }) {
+  return (
+    <div className="rounded-[10px] border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-[11px] leading-snug">
+      <span className="text-white/55">LVGL mode: shapes, colour and tweens only.</span>
+      <span className="mt-0.5 block text-white/35">
+        No {UNSUPPORTED_IN_LVGL.join(", ")}. ~{capabilities("lvgl").fps}fps on the device.
+      </span>
+      {droppedShape && (
+        <span className="mt-1.5 block text-[#E8BE3C]/90">
+          {droppedShape} eyes fall back to a bar here and on export.
+        </span>
+      )}
+    </div>
+  );
+}
+
 /**
  * Face-specific panel body: a Screen group and an Eyes group built from the
  * generic control kit. "Link eyes" edits both together; unlink to pose them
  * separately.
+ *
+ * Every control is gated on what `render.target` can draw, so LVGL mode offers
+ * no parameter the robot would silently ignore.
  */
 export default function FaceControls({
   face,
+  render,
+  onRenderChange,
   linked,
   onToggleLink,
   onGlobalChange,
@@ -263,11 +350,19 @@ export default function FaceControls({
   onToggleGaze,
   onGazeModeChange,
 }: FaceControlsProps) {
+  const caps = capabilities(render.target);
+  const shapes = shapesFor(render.target);
+  const eyeGroupProps = { shapes, customSvgAllowed: caps.customSvg };
+
   return (
     <>
+      {render.target === "lvgl" && (
+        <LvglNotice droppedShape={droppedShapeIn(face, "lvgl")} />
+      )}
+
       <ControlSection title="Screen">
         <ColorField label="Eye color" value={face.color} onChange={onColorChange} />
-        {GLOBAL_FIELDS.map((f) => (
+        {globalFieldsFor(render.target).map((f) => (
           <NumberSlider
             key={f.key}
             label={f.label}
@@ -290,6 +385,7 @@ export default function FaceControls({
         {linked ? (
           <EyeGroup
             eye={face.left}
+            {...eyeGroupProps}
             onEyeChange={(key, value) => onEyeChange("both", key, value)}
             onShape={(shape) => onEyeShapeChange("both", shape)}
             onCustom={(svg, vb) => onEyeCustomSvgChange("both", svg, vb)}
@@ -299,6 +395,7 @@ export default function FaceControls({
             <EyeGroupLabel>Left</EyeGroupLabel>
             <EyeGroup
               eye={face.left}
+              {...eyeGroupProps}
               onEyeChange={(key, value) => onEyeChange("left", key, value)}
               onShape={(shape) => onEyeShapeChange("left", shape)}
               onCustom={(svg, vb) => onEyeCustomSvgChange("left", svg, vb)}
@@ -306,6 +403,7 @@ export default function FaceControls({
             <EyeGroupLabel>Right</EyeGroupLabel>
             <EyeGroup
               eye={face.right}
+              {...eyeGroupProps}
               onEyeChange={(key, value) => onEyeChange("right", key, value)}
               onShape={(shape) => onEyeShapeChange("right", shape)}
               onCustom={(svg, vb) => onEyeCustomSvgChange("right", svg, vb)}
@@ -345,6 +443,21 @@ export default function FaceControls({
             </>
           ))}
       </ControlSection>
+
+      {!caps.spring && (
+        <ControlSection title="Transition">
+          <NumberSlider
+            label={TWEEN_MS_FIELD.label}
+            value={render.durationMs}
+            min={TWEEN_MS_FIELD.min}
+            max={TWEEN_MS_FIELD.max}
+            step={TWEEN_MS_FIELD.step}
+            unit={TWEEN_MS_FIELD.unit}
+            onChange={(v) => onRenderChange({ durationMs: v })}
+          />
+          <EasingPicker ease={render.ease} onPick={(ease) => onRenderChange({ ease })} />
+        </ControlSection>
+      )}
 
       <ControlSection title="Eye movement" defaultOpen={false}>
         <FieldRow>

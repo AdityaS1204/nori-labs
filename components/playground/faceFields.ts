@@ -3,6 +3,7 @@ import type {
   NoriEyeParams,
   NoriFaceParams,
 } from "@/lib/nori-face";
+import { TWEEN_MS_RANGE, capabilities, type RenderTarget } from "@/lib/render-target";
 
 /** Which half (or both) of the face an eye/brow edit applies to. */
 export type EyeSide = "left" | "right" | "both";
@@ -65,3 +66,17 @@ export const GLOBAL_FIELDS: FieldDef<GlobalFieldKey>[] = [
   { key: "gap", label: "Eye gap", min: 40, max: 300, step: 1 },
   { key: "glow", label: "Glow", min: 0, max: 2, step: 0.05, format: (v) => v.toFixed(2) },
 ];
+
+/** Screen-wide fields the target can actually render (LVGL has no glow). */
+export const globalFieldsFor = (target: RenderTarget): FieldDef<GlobalFieldKey>[] =>
+  capabilities(target).glow ? GLOBAL_FIELDS : GLOBAL_FIELDS.filter((f) => f.key !== "glow");
+
+/** Tween length, offered in place of the spring on a target without one. */
+export const TWEEN_MS_FIELD: FieldDef<"durationMs"> = {
+  key: "durationMs",
+  label: "Duration",
+  min: TWEEN_MS_RANGE.min,
+  max: TWEEN_MS_RANGE.max,
+  step: TWEEN_MS_RANGE.step,
+  unit: "ms",
+};

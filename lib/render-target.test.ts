@@ -5,8 +5,8 @@ import {
   DEFAULT_RENDER,
   TWEEN_MS_RANGE,
   capabilities,
+  droppedShapeIn,
   faceForTarget,
-  facesLostDetail,
   normalizeRender,
   shapesFor,
   supportsShape,
@@ -96,15 +96,19 @@ describe("faceForTarget", () => {
   });
 });
 
-describe("facesLostDetail", () => {
-  it("is false when the target can draw the face as authored", () => {
-    expect(facesLostDetail(cloneFace(NEUTRAL_FACE), "web")).toBe(false);
-    const flat = { ...cloneFace(NEUTRAL_FACE), glow: 0 };
-    expect(facesLostDetail(flat, "lvgl")).toBe(false);
+describe("droppedShapeIn", () => {
+  it("is null when the target can draw every shape in the face", () => {
+    expect(droppedShapeIn(glowingCustomFace(), "web")).toBeNull();
+    expect(droppedShapeIn(cloneFace(NEUTRAL_FACE), "lvgl")).toBeNull();
   });
 
-  it("flags a glow or a pasted SVG that LVGL would have to drop", () => {
-    expect(facesLostDetail(glowingCustomFace(), "lvgl")).toBe(true);
+  it("names a pasted SVG eye that LVGL has to replace", () => {
+    expect(droppedShapeIn(glowingCustomFace(), "lvgl")).toBe("Custom");
+  });
+
+  it("stays quiet about the neutral face's glow, which every preset carries", () => {
+    expect(NEUTRAL_FACE.glow).toBeGreaterThan(0);
+    expect(droppedShapeIn(cloneFace(NEUTRAL_FACE), "lvgl")).toBeNull();
   });
 });
 
