@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { VolumeHighIcon, VolumeMute01Icon } from "@hugeicons/core-free-icons";
@@ -14,6 +14,64 @@ const TIP_OFFSET = 16;
 
 const FOLLOW = { stiffness: 520, damping: 42, mass: 0.6 } as const;
 const EASE = [0.23, 1, 0.32, 1] as const;
+
+type ReelProps = { media: NavMedia; muted: boolean };
+
+/**
+ * The clips of one preview, played as a single reel: each runs to its end and
+ * hands over to the next, and the last loops back to the first.
+ *
+ * Every clip is mounted and buffered for the whole time, and the next one is
+ * started a beat before it is revealed, so a hand-over cuts straight from one
+ * last frame to the next first frame instead of flashing the poster or black.
+ */
+function Reel({ media, muted }: ReelProps) {
+  const [index, setIndex] = useState(0);
+  const clips = useRef<(HTMLVideoElement | null)[]>([]);
+  const single = media.clips.length === 1;
+
+  useEffect(() => {
+    const video = clips.current[index];
+    if (video && !muted) void video.play().catch(() => {});
+  }, [muted, index]);
+
+  const handOver = () => {
+    const next = (index + 1) % media.clips.length;
+    const video = clips.current[next];
+
+    if (video) {
+      video.currentTime = 0;
+      void video.play().catch(() => {});
+    }
+    setIndex(next);
+  };
+
+  return (
+    <>
+      {media.clips.map((src, i) => (
+        <video
+          key={src}
+          ref={(node) => {
+            clips.current[i] = node;
+          }}
+          src={src}
+          poster={i === 0 ? media.poster : undefined}
+          aria-label={i === 0 ? media.label : undefined}
+          aria-hidden={i > 0}
+          className={`absolute inset-0 h-full w-full object-cover ${
+            i === index ? "opacity-100" : "opacity-0"
+          }`}
+          autoPlay={i === 0}
+          muted={muted}
+          loop={single}
+          onEnded={single ? undefined : handOver}
+          playsInline
+          preload={single ? "none" : "auto"}
+        />
+      ))}
+    </>
+  );
+}
 
 type Props = { media: NavMedia; className?: string };
 
@@ -30,7 +88,6 @@ type Props = { media: NavMedia; className?: string };
 export default function NavVideo({ media, className = "" }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
-  const soundRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
   const [muted, setMuted] = useState(true);
   const reduced = useReducedMotion();
@@ -67,14 +124,7 @@ export default function NavVideo({ media, className = "" }: Props) {
     place(event, true);
   };
 
-  const toggleSound = () => {
-    const video = soundRef.current;
-    if (!video) return;
-
-    video.muted = !video.muted;
-    setMuted(video.muted);
-    if (!video.muted) void video.play().catch(() => {});
-  };
+  const toggleSound = () => setMuted((on) => !on);
 
   return (
     <Squircle cornerRadius={RADIUS.control}>
@@ -92,27 +142,9 @@ export default function NavVideo({ media, className = "" }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={reduced ? { duration: 0 } : { duration: 0.28, ease: EASE }}
-            className="absolute inset-0 grid"
-            style={{ gridTemplateRows: `repeat(${media.clips.length}, 1fr)` }}
+            className="absolute inset-0"
           >
-            {media.clips.map((src, i) => (
-              <video
-                key={src}
-                // Only the first clip can carry sound: unmuting a stack would
-                // play two soundtracks over each other.
-                ref={i === 0 ? soundRef : undefined}
-                src={src}
-                poster={i === 0 ? media.poster : undefined}
-                aria-label={i === 0 ? media.label : undefined}
-                aria-hidden={i > 0}
-                className="h-full w-full object-cover"
-                autoPlay
-                muted={muted || i > 0}
-                loop
-                playsInline
-                preload="none"
-              />
-            ))}
+            <Reel media={media} muted={muted} />
           </motion.div>
         </AnimatePresence>
 

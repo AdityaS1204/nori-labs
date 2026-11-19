@@ -42,9 +42,9 @@ export type Spec = { label: string; value: string };
 export type NavChild = { href: string; label: string; note: string; media?: NavMedia };
 
 /**
- * Footage shown beside a tab's links. Several clips tile into one frame as
- * horizontal bands, which keeps wide room shots readable where a side-by-side
- * split would crop them to slivers.
+ * Footage shown beside a tab's links. Several clips play as one reel: each
+ * runs to the end, hands over to the next, and the last loops back to the
+ * first.
  */
 export type NavMedia = {
   clips: readonly string[];
@@ -87,11 +87,11 @@ export const NAV_LINKS: readonly NavItem[] = [
         note: "Kitchen, tidying, laundry, dishes.",
         media: {
           clips: [
-            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069078/evd-t1_kvjep7.mp4",
             "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069077/evd-t2_konwfd.mp4",
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069078/evd-t1_kvjep7.mp4",
           ],
           poster:
-            "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_5,c_fill,w_640,h_360,q_auto,f_jpg/v1795069078/evd-t1_kvjep7.jpg",
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_2,c_fill,w_640,h_360,q_auto,f_jpg/v1795069077/evd-t2_konwfd.jpg",
           label: "Around the house",
         },
       },

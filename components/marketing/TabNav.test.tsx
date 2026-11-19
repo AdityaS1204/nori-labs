@@ -58,7 +58,7 @@ describe("NavVideo", () => {
     expect(markup).toContain(`poster="${media!.poster}"`);
   });
 
-  it("tiles a multi-clip preview into one frame, with one soundtrack", () => {
+  it("plays a multi-clip preview as one reel", () => {
     const stacked = NAV_LINKS.flatMap((item) => item.items)
       .map((child) => child.media)
       .find((m) => m && m.clips.length > 1)!;
@@ -66,8 +66,18 @@ describe("NavVideo", () => {
 
     expect(html.match(/<video/g)).toHaveLength(stacked.clips.length);
     for (const src of stacked.clips) expect(html).toContain(`src="${src}"`);
-    // Every clip past the first is muted outright and hidden from the a11y tree.
+    // Clips past the first are hidden from the a11y tree and from view: they
+    // are mounted only so the hand-over has them buffered and ready.
     expect(html.match(/aria-hidden="true"/g)).toHaveLength(stacked.clips.length - 1);
+    expect(html.match(/object-cover opacity-0/g)).toHaveLength(stacked.clips.length - 1);
+    // A reel chains on `ended`, so no clip in it may loop on its own.
+    expect(html).not.toContain("loop");
+    expect(html.match(/preload="auto"/g)).toHaveLength(stacked.clips.length);
+  });
+
+  it("still loops a single-clip preview on its own", () => {
+    expect(markup).toContain("loop");
+    expect(markup).toContain('preload="none"');
   });
 
   it("starts muted and looping, with the sound toggle labelled", () => {
