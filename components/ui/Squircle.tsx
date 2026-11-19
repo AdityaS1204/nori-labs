@@ -8,7 +8,7 @@ import { getSvgPath } from "figma-squircle";
 export const CORNER_SMOOTHING = 0.6;
 
 type Props = {
-  /** Corner radius in px. Keep the child's matching `rounded-*` class: it is what shows before the clip is measured. */
+  /** Corner radius in px, usually a value from `RADIUS`. */
   cornerRadius: number;
   cornerSmoothing?: number;
   children: React.ReactNode;
@@ -18,9 +18,10 @@ type Props = {
  * Continuous ("squircle") corners on the single child element.
  *
  * The clip path can only be drawn once the box has been measured, so the child
- * keeps its own `border-radius` for the server render and for no-JS: the shape
- * is written straight to the node in a layout effect, before paint, and never
- * through state, so measuring never re-renders the tree it is wrapping.
+ * is given a plain `border-radius` of the same size to carry the server render
+ * and no-JS. The path itself is written straight to the node in a layout
+ * effect, before paint, and never through state, so measuring never re-renders
+ * the tree it is wrapping.
  */
 export default function Squircle({
   cornerRadius,
@@ -51,7 +52,7 @@ export default function Squircle({
   }, [cornerRadius, cornerSmoothing]);
 
   return (
-    <Slot ref={ref} data-squircle={cornerRadius}>
+    <Slot ref={ref} data-squircle={cornerRadius} style={{ borderRadius: cornerRadius }}>
       {children}
     </Slot>
   );

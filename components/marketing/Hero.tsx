@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { HERO, SUPPORTING_DETAILS } from "@/lib/landing-content";
 import Squircle from "@/components/ui/Squircle";
+import { RADIUS } from "@/components/ui/radius";
 import HeadlineMark from "./HeadlineMark";
 import HeroMedia from "./HeroMedia";
 import Reveal from "./Reveal";
@@ -36,18 +37,18 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <Squircle cornerRadius={18}>
+            <Squircle cornerRadius={RADIUS.control}>
               <Link
                 href={HERO.primaryCta.href}
-                className="rounded-[18px] bg-lime px-5 py-2.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
+                className="bg-lime px-5 py-2.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
               >
                 {HERO.primaryCta.label}
               </Link>
             </Squircle>
-            <Squircle cornerRadius={18}>
+            <Squircle cornerRadius={RADIUS.control}>
               <Link
                 href={HERO.secondaryCta.href}
-                className="rounded-[18px] border border-white/20 px-5 py-2.5 text-[13px] font-medium text-white/85 no-underline transition-[color,border-color,background-color] duration-150 hover:border-white/40 hover:bg-white/[0.05] hover:text-white"
+                className="border border-white/20 px-5 py-2.5 text-[13px] font-medium text-white/85 no-underline transition-[color,border-color,background-color] duration-150 hover:border-white/40 hover:bg-white/[0.05] hover:text-white"
               >
                 {HERO.secondaryCta.label}
               </Link>
@@ -60,8 +61,8 @@ export default function Hero() {
         <HeroMedia />
 
         <Reveal className="mx-auto mt-3 max-w-[1180px]" delay={0.05}>
-          <Squircle cornerRadius={10}>
-            <dl className="m-0 grid gap-px overflow-hidden rounded-[10px] bg-white/[0.08] sm:grid-cols-3">
+          <Squircle cornerRadius={RADIUS.surface}>
+            <dl className="m-0 grid gap-px overflow-hidden bg-white/[0.08] sm:grid-cols-3">
             {SUPPORTING_DETAILS.map(({ label, value }) => (
               <div key={label} className="flex flex-col gap-1.5 bg-ink px-5 py-4">
                 <dt className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">

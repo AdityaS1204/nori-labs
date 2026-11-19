@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import Squircle from "@/components/ui/Squircle";
+import { RADIUS } from "@/components/ui/radius";
 import { CLOSING } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
@@ -33,10 +34,10 @@ export default function Closing() {
 
         <p className="m-0 max-w-[40ch] font-display text-[15px] leading-relaxed text-white/55">{CLOSING.body}</p>
 
-        <Squircle cornerRadius={18}>
+        <Squircle cornerRadius={RADIUS.control}>
           <Link
             href={CLOSING.cta.href}
-            className="rounded-[18px] bg-lime px-5 py-2.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
+            className="bg-lime px-5 py-2.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
           >
             {CLOSING.cta.label}
           </Link>

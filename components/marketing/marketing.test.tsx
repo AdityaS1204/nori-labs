@@ -180,8 +180,14 @@ describe("scroll entrance", () => {
   it("never ships an unmeasured clip path", () => {
     for (const html of pages) {
       expect(html).not.toContain("clip-path");
-      if (html.includes("data-squircle")) expect(html).toMatch(/rounded-\[\d+px\]/);
+      for (const [, radius, fallback] of html.matchAll(
+        /data-squircle="(\d+)"[^>]*style="[^"]*border-radius:(\d+)px/g,
+      )) {
+        expect(fallback).toBe(radius);
+      }
     }
+    const squircled = pages.join("").match(/data-squircle=/g) ?? [];
+    expect(squircled.length).toBeGreaterThan(5);
   });
 
   it("starts each revealed block offset rather than faded", () => {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import Squircle from "@/components/ui/Squircle";
+import { RADIUS } from "@/components/ui/radius";
 import { TEACH_IT } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
@@ -42,10 +43,10 @@ export default function TeachIt() {
             ))}
           </ol>
 
-          <Squircle cornerRadius={18}>
+          <Squircle cornerRadius={RADIUS.control}>
             <Link
               href={TEACH_IT.cta.href}
-              className="mt-1 rounded-[18px] bg-ink px-5 py-2.5 text-[13px] font-medium text-cream no-underline transition-[filter,transform] duration-150 hover:brightness-150 motion-safe:active:scale-[0.97]"
+              className="mt-1 bg-ink px-5 py-2.5 text-[13px] font-medium text-cream no-underline transition-[filter,transform] duration-150 hover:brightness-150 motion-safe:active:scale-[0.97]"
             >
               {TEACH_IT.cta.label}
             </Link>

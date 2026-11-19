@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
 
+import { RADIUS } from "@/components/ui/radius";
 import { HERO } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 
@@ -34,14 +35,14 @@ export default function HeroMedia() {
   });
 
   const width = useTransform(progress, [0, 1], ["78%", "100%"]);
-  const radius = useTransform(progress, [0, 1], [22, 10]);
+  const radius = useTransform(progress, [0, 1], [RADIUS.surface + 8, RADIUS.surface]);
 
   const settled = mounted && reduced;
 
   return (
     <motion.div
       className="mx-auto overflow-hidden"
-      style={settled ? { width: "100%", borderRadius: 10 } : { width, borderRadius: radius }}
+      style={settled ? { width: "100%", borderRadius: RADIUS.surface } : { width, borderRadius: radius }}
     >
       <MediaCard media={HERO.media} cornerRadius={0} />
     </motion.div>

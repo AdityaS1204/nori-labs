@@ -1,4 +1,5 @@
 import Squircle from "@/components/ui/Squircle";
+import { RADIUS } from "@/components/ui/radius";
 import { HARDWARE } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
@@ -18,8 +19,8 @@ function Plate({ title, caption }: { title: string; caption: string }) {
 
 function Card({ card, className = "" }: { card: (typeof HARDWARE.cards)[number]; className?: string }) {
   return (
-    <Squircle cornerRadius={10}>
-      <div className={`flex flex-col overflow-hidden rounded-[10px] bg-white ${className}`}>
+    <Squircle cornerRadius={RADIUS.surface}>
+      <div className={`flex flex-col overflow-hidden bg-white ${className}`}>
         <MediaCard media={card.media} cornerRadius={0} />
         <Plate title={card.title} caption={card.caption} />
       </div>
@@ -54,8 +55,8 @@ export default function Hardware() {
         </Reveal>
 
         <Reveal delay={0.05}>
-          <Squircle cornerRadius={10}>
-            <dl className="m-0 grid gap-px overflow-hidden rounded-[10px] bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
+          <Squircle cornerRadius={RADIUS.surface}>
+            <dl className="m-0 grid gap-px overflow-hidden bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
             {HARDWARE.specs.map(({ label, value }) => (
               <div key={label} className="flex flex-col gap-2 bg-cream px-5 py-5">
                 <dt className="font-mono text-[9.5px] uppercase tracking-[0.18em] text-ink/40">

@@ -1,4 +1,5 @@
 import Squircle from "@/components/ui/Squircle";
+import { RADIUS } from "@/components/ui/radius";
 import type { MediaSlot, MediaTone } from "@/lib/landing-content";
 import MediaVideo from "./MediaVideo";
 
@@ -27,14 +28,14 @@ type Props = {
  * colour block carrying the slot marker and shot note from the design. The tone
  * doubles as the backdrop a video sits on while it loads.
  */
-export default function MediaCard({ media, className = "", cornerRadius = 10 }: Props) {
+export default function MediaCard({ media, className = "", cornerRadius = RADIUS.surface }: Props) {
   const filled = Boolean(media.src);
   // Over footage the markers need their own contrast, not the tone's.
   const marker = filled ? "text-white/70" : MARKER[media.tone];
 
   const card = (
     <figure
-      className={`group relative m-0 overflow-hidden ${cornerRadius > 0 ? "rounded-[10px]" : ""} ${TONES[media.tone]} ${className}`}
+      className={`group relative m-0 overflow-hidden ${TONES[media.tone]} ${className}`}
       style={{ aspectRatio: media.ratio }}
       {...(filled ? {} : { role: "img", "aria-label": `Placeholder: ${media.slot}` })}
     >
