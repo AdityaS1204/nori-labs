@@ -78,12 +78,13 @@ export const NAV_CTA = { label: "Order Now", href: "/preorder" } as const;
 export const HERO = {
   label: "Nori A3 / home robot",
   headline: [
-    ["Meet", { mark: true }, "A3."],
+    ["Meet", { mark: true }, "Nori A3."],
     ["It looks back."],
   ] satisfies readonly (readonly HeadlinePart[])[],
-  // Delivered at display size: the source png is 1.6MB, this is a few KB.
+  // Delivered at display size: the source png is 1.1MB, this is ~18KB. f_webp
+  // rather than f_auto, which hands back a jpeg and flattens the transparency.
   mark: {
-    src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/w_240,q_auto,f_webp/v1795065970/Glossy_Neon_Green_Clover_Icon_f6uca6.png",
+    src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/w_240,q_auto,f_webp/v1795067350/Glossy_Neon_Green_Clover_Logo_k7snhs.png",
   },
   body: "A home robot with an animated face. Shipping fall 2026, at $1,688.",
   primaryCta: { label: "Learn more", href: "#what-it-is" },

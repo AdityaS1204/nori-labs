@@ -17,7 +17,7 @@ export default function Hero() {
         <Reveal className="flex flex-col gap-7">
           <h1
             id="hero-headline"
-            className="m-0 font-display text-[clamp(40px,8vw,76px)] font-semibold leading-[0.98] tracking-[-0.035em] text-white"
+            className="m-0 font-display text-[clamp(40px,8.5vw,88px)] font-semibold leading-[0.98] tracking-[-0.035em] text-white"
           >
             {HERO.headline.map((line, lineIndex) => (
               <span key={`line-${lineIndex}`} className="block">
