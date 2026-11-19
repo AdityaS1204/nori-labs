@@ -207,7 +207,7 @@ export default function TabNav() {
                   }`}
                   style={{ backgroundColor: SURFACE }}
                 >
-                  <ul className="m-0 flex list-none flex-col gap-1 p-0" role="list">
+                  <ul className="m-0 flex list-none flex-col gap-0.5 p-0" role="list">
                     {active.items.map((child, childIdx) => (
                       <li
                         key={child.href + child.label}
