@@ -82,7 +82,6 @@ export const NAV_LINKS: readonly NavItem[] = [
     items: [
       { href: "#what-it-is", label: "What it is", note: "A bimanual robot you teach by showing." },
       { href: "#the-face", label: "The face", note: "How you tell what it is doing." },
-      { href: "#limits", label: "What it can't do yet", note: "Where it honestly stands today." },
       { href: "#order", label: "Price and shipping", note: "$1,688, no deposit. Fall 2026." },
     ],
   },
