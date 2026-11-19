@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import Squircle from "@/components/ui/Squircle";
 import { TEACH_IT } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
@@ -14,12 +15,12 @@ export default function TeachIt() {
 
           <h2
             id="teach-it-headline"
-            className="m-0 text-[clamp(26px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink"
+            className="m-0 font-display text-[clamp(26px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink"
           >
             {TEACH_IT.headline}
           </h2>
 
-          <p className="m-0 max-w-[42ch] text-[14px] leading-relaxed text-ink/60">
+          <p className="m-0 max-w-[42ch] font-display text-[15px] leading-relaxed text-ink/65">
             {TEACH_IT.body}
           </p>
 
@@ -41,12 +42,14 @@ export default function TeachIt() {
             ))}
           </ol>
 
-          <Link
-            href={TEACH_IT.cta.href}
-            className="mt-1 rounded-full bg-ink px-5 py-2.5 text-[13px] font-medium text-cream no-underline transition-[filter,transform] duration-150 hover:brightness-150 motion-safe:active:scale-[0.97]"
-          >
-            {TEACH_IT.cta.label}
-          </Link>
+          <Squircle cornerRadius={18}>
+            <Link
+              href={TEACH_IT.cta.href}
+              className="mt-1 rounded-[18px] bg-ink px-5 py-2.5 text-[13px] font-medium text-cream no-underline transition-[filter,transform] duration-150 hover:brightness-150 motion-safe:active:scale-[0.97]"
+            >
+              {TEACH_IT.cta.label}
+            </Link>
+          </Squircle>
         </Reveal>
 
         <Reveal delay={0.06}>

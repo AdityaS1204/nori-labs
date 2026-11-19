@@ -1,3 +1,4 @@
+import Squircle from "@/components/ui/Squircle";
 import type { MediaSlot, MediaTone } from "@/lib/landing-content";
 import MediaVideo from "./MediaVideo";
 
@@ -17,6 +18,8 @@ const MARKER: Record<MediaTone, string> = {
 type Props = {
   media: MediaSlot;
   className?: string;
+  /** Continuous-corner radius in px; 0 renders the card square. */
+  cornerRadius?: number;
 };
 
 /**
@@ -24,14 +27,14 @@ type Props = {
  * colour block carrying the slot marker and shot note from the design. The tone
  * doubles as the backdrop a video sits on while it loads.
  */
-export default function MediaCard({ media, className = "" }: Props) {
+export default function MediaCard({ media, className = "", cornerRadius = 10 }: Props) {
   const filled = Boolean(media.src);
   // Over footage the markers need their own contrast, not the tone's.
   const marker = filled ? "text-white/70" : MARKER[media.tone];
 
-  return (
+  const card = (
     <figure
-      className={`group relative m-0 overflow-hidden rounded-[10px] ${TONES[media.tone]} ${className}`}
+      className={`group relative m-0 overflow-hidden ${cornerRadius > 0 ? "rounded-[10px]" : ""} ${TONES[media.tone]} ${className}`}
       style={{ aspectRatio: media.ratio }}
       {...(filled ? {} : { role: "img", "aria-label": `Placeholder: ${media.slot}` })}
     >
@@ -64,7 +67,7 @@ export default function MediaCard({ media, className = "" }: Props) {
       ) : null}
 
       {media.overlay ? (
-        <p className="absolute bottom-5 left-5 z-10 m-0 max-w-[14ch] text-[clamp(22px,3.4vw,38px)] font-semibold leading-[1.04] tracking-[-0.025em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
+        <p className="absolute bottom-5 left-5 z-10 m-0 max-w-[14ch] font-display text-[clamp(22px,3.4vw,38px)] font-semibold leading-[1.04] tracking-[-0.025em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
           {media.overlay}
         </p>
       ) : null}
@@ -77,5 +80,13 @@ export default function MediaCard({ media, className = "" }: Props) {
         </p>
       ) : null}
     </figure>
+  );
+
+  if (cornerRadius <= 0) return card;
+
+  return (
+    <Squircle cornerRadius={cornerRadius}>
+      {card}
+    </Squircle>
   );
 }

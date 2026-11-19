@@ -43,7 +43,7 @@ export default function HeroMedia() {
       className="mx-auto overflow-hidden"
       style={settled ? { width: "100%", borderRadius: 10 } : { width, borderRadius: radius }}
     >
-      <MediaCard media={HERO.media} className="!rounded-none" />
+      <MediaCard media={HERO.media} cornerRadius={0} />
     </motion.div>
   );
 }

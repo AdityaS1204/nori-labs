@@ -38,7 +38,10 @@ describe("Hero", () => {
 
   it("renders both headline lines, the label and both calls to action", () => {
     const body = text(<Hero />);
-    for (const line of HERO.headline) expect(body).toContain(line);
+    for (const line of HERO.headline) {
+      const words = line.filter((p): p is string => typeof p === "string").join(" ");
+      expect(body).toContain(words);
+    }
     expect(body).toContain(HERO.primaryCta.label);
     expect(body).toContain(HERO.secondaryCta.label);
     expect(html).toContain(`href="${HERO.primaryCta.href}"`);
@@ -46,6 +49,12 @@ describe("Hero", () => {
 
   it("uses a single h1", () => {
     expect(html.match(/<h1\b/g)).toHaveLength(1);
+  });
+
+  it("sets the nori mark inline in the headline, hidden from assistive tech", () => {
+    const h1 = html.slice(html.indexOf("<h1"), html.indexOf("</h1>"));
+    expect(h1).toContain(`src="${HERO.mark.src}"`);
+    expect(h1).toContain('aria-hidden="true"');
   });
 
   it("renders every supporting detail", () => {
@@ -162,6 +171,16 @@ describe("scroll entrance", () => {
     for (const html of pages) {
       expect(html).not.toMatch(/opacity:\s*0[^.\d]/);
       expect(html).not.toMatch(/visibility:\s*hidden/);
+    }
+  });
+
+  // The squircle clip can only be drawn from a measured box, so the server
+  // render must fall back to a plain radius rather than an empty clip path,
+  // which would hide the element until hydration.
+  it("never ships an unmeasured clip path", () => {
+    for (const html of pages) {
+      expect(html).not.toContain("clip-path");
+      if (html.includes("data-squircle")) expect(html).toMatch(/rounded-\[\d+px\]/);
     }
   });
 

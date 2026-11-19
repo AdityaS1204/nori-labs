@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, Cancel01Icon, Menu01Icon } from "@hugeicons/core-free-icons";
 
+import Squircle from "@/components/ui/Squircle";
 import { NAV_CTA, NAV_LINKS } from "@/lib/landing-content";
 
 const EASE = [0.23, 1, 0.32, 1] as const;
@@ -147,12 +148,14 @@ export default function TabNav() {
           </ul>
 
           <div className="ml-auto flex shrink-0 items-center gap-1 pb-2">
-            <Link
-              href={NAV_CTA.href}
-              className="rounded-full bg-lime px-4 py-1.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
-            >
-              {NAV_CTA.label}
-            </Link>
+            <Squircle cornerRadius={14}>
+              <Link
+                href={NAV_CTA.href}
+                className="rounded-[14px] bg-lime px-4 py-1.5 text-[13px] font-medium text-ink no-underline transition-[filter,transform] duration-150 hover:brightness-105 motion-safe:active:scale-[0.97]"
+              >
+                {NAV_CTA.label}
+              </Link>
+            </Squircle>
 
             <button
               type="button"
@@ -197,27 +200,29 @@ export default function TabNav() {
                 >
                   {active.items.map((child) => (
                     <li key={child.href + child.label}>
-                      <Link
-                        href={child.href}
-                        onClick={() => setOpenIdx(null)}
-                        className="group flex items-center justify-between gap-4 rounded-[8px] px-4 py-3 no-underline transition-colors duration-150 hover:brightness-125"
-                        style={{ backgroundColor: SHELL }}
-                      >
-                        <span className="flex flex-col gap-0.5">
-                          <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
-                            {child.label}
+                      <Squircle cornerRadius={8}>
+                        <Link
+                          href={child.href}
+                          onClick={() => setOpenIdx(null)}
+                          className="group flex items-center justify-between gap-4 rounded-[8px] px-4 py-3 no-underline transition-colors duration-150 hover:brightness-125"
+                          style={{ backgroundColor: SHELL }}
+                        >
+                          <span className="flex flex-col gap-0.5">
+                            <span className="text-[14px] font-medium tracking-[-0.01em] text-white">
+                              {child.label}
+                            </span>
+                            <span className="text-[12px] leading-snug text-white/40">
+                              {child.note}
+                            </span>
                           </span>
-                          <span className="text-[12px] leading-snug text-white/40">
-                            {child.note}
-                          </span>
-                        </span>
-                        <HugeiconsIcon
-                          icon={ArrowUpRight01Icon}
-                          size={18}
-                          color="currentColor"
-                          className="shrink-0 text-white/30 transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-lime"
-                        />
-                      </Link>
+                          <HugeiconsIcon
+                            icon={ArrowUpRight01Icon}
+                            size={18}
+                            color="currentColor"
+                            className="shrink-0 text-white/30 transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-lime"
+                          />
+                        </Link>
+                      </Squircle>
                     </li>
                   ))}
                 </motion.ul>
@@ -240,13 +245,15 @@ export default function TabNav() {
               <ul className="m-0 list-none p-2 pt-0" role="list">
                 {NAV_LINKS.map((item) => (
                   <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="block rounded-[10px] px-3 py-3 text-[16px] font-medium text-white no-underline transition-colors duration-150 hover:bg-white/[0.05]"
-                    >
-                      {item.label}
-                    </Link>
+                    <Squircle cornerRadius={10}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block rounded-[10px] px-3 py-3 text-[16px] font-medium text-white no-underline transition-colors duration-150 hover:bg-white/[0.05]"
+                      >
+                        {item.label}
+                      </Link>
+                    </Squircle>
                   </li>
                 ))}
               </ul>

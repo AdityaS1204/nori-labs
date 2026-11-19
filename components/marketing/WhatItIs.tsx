@@ -16,7 +16,7 @@ export default function WhatItIs() {
         <Reveal>
           <h2
             id="what-it-is-headline"
-            className="m-0 max-w-[24ch] text-[clamp(26px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink"
+            className="m-0 max-w-[24ch] font-display text-[clamp(26px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink"
           >
             {WHAT_IT_IS.headline}
           </h2>
