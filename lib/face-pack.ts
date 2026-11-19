@@ -10,11 +10,21 @@
 import { NEUTRAL_FACE, type NoriFaceParams } from "@/lib/nori-face";
 import { normalizeStates } from "@/lib/preset-row";
 import type { ExpressionState, Preset } from "@/lib/presets";
+import {
+  DEFAULT_RENDER,
+  EASINGS as TWEEN_EASINGS,
+  capabilities,
+  faceForTarget,
+  normalizeRender,
+  type Easing,
+  type RenderConfig,
+  type RenderTarget,
+} from "@/lib/render-target";
 
 export const SCHEMA_VERSION = 1;
 
 export type FitMode = "contain" | "cover" | "stretch";
-export type Easing = "linear" | "easeIn" | "easeOut" | "easeInOut";
+export type { Easing, RenderTarget };
 /** Gaze modes a pack may request. The playground's `cursor` mode is preview-only. */
 export type PackGazeMode = "off" | "random";
 
@@ -52,8 +62,14 @@ export interface AmbientSpec {
 }
 
 export interface TransitionSpec {
-  /** Spring used when morphing between states. */
+  /** Spring used when morphing between states. Ignored by a tweening target. */
   spring: SpringSpec;
+  /**
+   * Tween length, written for targets without a spring solver (LVGL). When
+   * present it wins over `spring`, so one pack drives both renderers.
+   */
+  durationMs?: number;
+  ease?: Easing;
 }
 
 export interface FacePackState {
@@ -67,6 +83,12 @@ export interface FacePackState {
 export interface FacePack {
   schema: typeof SCHEMA_VERSION;
   name: string;
+  /**
+   * Engine the pack was authored for. Additive in schema 1: a pack written
+   * before this field reads back as `web`, and a renderer that predates it
+   * ignores the field and still gets a face it can draw.
+   */
+  target: RenderTarget;
   /** Id of the state shown at boot. Must resolve to a member of states. */
   defaultState: string;
   /** Screen colour behind the face; 6-digit hex. */
@@ -153,14 +175,16 @@ export function presetToPack(preset: Preset): FacePack {
   const source: ExpressionState[] = normalizeStates(preset.states);
   if (source.length === 0) throw new FacePackError("a pack needs at least one state");
 
+  const render = normalizeRender(preset.render);
   const used = new Set<string>();
   const states: FacePackState[] = source.map((state, i) => {
     const id = uniqueId(slugifyStateId(state.label, i), used);
     used.add(id);
+    const color = normalizeHex(state.face.color, `states[${i}].face.color`);
     return {
       id,
       label: state.label,
-      face: { ...state.face, color: normalizeHex(state.face.color, `states[${i}].face.color`) },
+      face: faceForTarget({ ...state.face, color }, render.target),
     };
   });
 
@@ -170,12 +194,27 @@ export function presetToPack(preset: Preset): FacePack {
   return {
     schema: SCHEMA_VERSION,
     name: preset.name.trim() || "Untitled face",
+    target: render.target,
     defaultState: states[coverIndex >= 0 ? coverIndex : 0].id,
     background: DEFAULT_BACKGROUND,
     fit: "contain",
-    transition: DEFAULT_TRANSITION,
+    transition: transitionFor(render),
     ambient: DEFAULT_AMBIENT,
     states,
+  };
+}
+
+/**
+ * A spring for targets that solve one, a duration + easing curve for those that
+ * do not. The spring is written either way so a web renderer reading an LVGL
+ * pack still has usable motion.
+ */
+export function transitionFor(render: RenderConfig): TransitionSpec {
+  if (capabilities(render.target).spring) return DEFAULT_TRANSITION;
+  return {
+    spring: DEFAULT_TRANSITION.spring,
+    durationMs: render.durationMs,
+    ease: render.ease,
   };
 }
 
@@ -232,9 +271,26 @@ function springOf(value: unknown, field: string, fallback: SpringSpec): SpringSp
   };
 }
 
-const EASINGS = ["linear", "easeIn", "easeOut", "easeInOut"] as const;
+/**
+ * Read a transition. A tween is kept when the pack states one; otherwise a
+ * target without a spring solver gets the default tween so its motion is
+ * expressible on the device.
+ */
+function tweenOf(t: Record<string, unknown>, target: RenderTarget): TransitionSpec {
+  const spring = springOf(t.spring, "pack.transition.spring", DEFAULT_TRANSITION.spring);
+  const stated = t.durationMs !== undefined || t.ease !== undefined;
+  if (!stated && capabilities(target).spring) return { spring };
+  return {
+    spring,
+    durationMs: num(t.durationMs, "pack.transition.durationMs", DEFAULT_RENDER.durationMs),
+    ease: oneOf(t.ease, "pack.transition.ease", TWEEN_EASINGS, DEFAULT_RENDER.ease),
+  };
+}
+
+const EASINGS = TWEEN_EASINGS;
 const FITS = ["contain", "cover", "stretch"] as const;
 const GAZE_MODES = ["off", "random"] as const;
+const TARGETS = ["web", "lvgl"] as const;
 
 /**
  * Validate and fill in a pack from untrusted JSON. Missing motion fields fall back
@@ -253,6 +309,8 @@ export function parsePack(input: unknown): FacePack {
   if (!Array.isArray(raw.states) || raw.states.length === 0) {
     throw new FacePackError("pack.states must be a non-empty array");
   }
+
+  const target = oneOf(raw.target, "pack.target", TARGETS, DEFAULT_RENDER.target);
 
   const seen = new Set<string>();
   const parsed: FacePackState[] = raw.states.map((entry, i) => {
@@ -276,9 +334,13 @@ export function parsePack(input: unknown): FacePack {
     };
   });
 
+  // A pack may name a target yet still carry detail that target cannot draw
+  // (hand-edited, or exported by an older playground). Clamp it here so the
+  // renderer never shows a glow the robot will not have.
+
   // Reuse the one existing migration path for eyes written before shape/thickness existed.
   const migrated = normalizeStates(parsed.map((s) => ({ id: s.id, label: s.label, face: s.face })));
-  const states = parsed.map((s, i) => ({ ...s, face: migrated[i].face }));
+  const states = parsed.map((s, i) => ({ ...s, face: faceForTarget(migrated[i].face, target) }));
 
   const defaultState = raw.defaultState;
   if (typeof defaultState !== "string" || !seen.has(defaultState)) {
@@ -296,13 +358,14 @@ export function parsePack(input: unknown): FacePack {
   return {
     schema: SCHEMA_VERSION,
     name: typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : "Untitled face",
+    target,
     defaultState,
     background:
       raw.background === undefined
         ? DEFAULT_BACKGROUND
         : normalizeHex(raw.background, "pack.background"),
     fit: oneOf(raw.fit, "pack.fit", FITS, "contain"),
-    transition: { spring: springOf(t.spring, "pack.transition.spring", DEFAULT_TRANSITION.spring) },
+    transition: tweenOf(t, target),
     ambient: {
       blink: {
         closeMs: num(blink.closeMs, "pack.ambient.blink.closeMs", d.blink.closeMs),
@@ -333,6 +396,7 @@ export function neutralPack(): FacePack {
   return {
     schema: SCHEMA_VERSION,
     name: "Neutral",
+    target: DEFAULT_RENDER.target,
     defaultState: "neutral",
     background: DEFAULT_BACKGROUND,
     fit: "contain",

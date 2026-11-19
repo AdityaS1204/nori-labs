@@ -36,6 +36,7 @@ invisible in practice.
 {
   "schema": 1,
   "name": "Nori default",
+  "target": "web",
   "defaultState": "neutral",
   "background": "#000000",
   "fit": "contain",
@@ -49,6 +50,7 @@ invisible in practice.
 |---|---|---|---|
 | `schema` | `1` | yes | Exact match. A reader must refuse any other value rather than guess. |
 | `name` | string | no | Display name. Blank or missing becomes `"Untitled face"`. |
+| `target` | `"web"` \| `"lvgl"` | no | Engine the pack was authored for. Default `web`. See [Render targets](#render-targets). |
 | `defaultState` | string | yes | Must equal some `states[].id`. Shown at boot. |
 | `background` | hex string | no | Screen colour behind the face. Default `#000000`. |
 | `fit` | enum above | no | Default `contain`. |
@@ -72,11 +74,18 @@ Applied when morphing from one state to another. The reference renderer springs 
 placement, openness, tilt and brow position simultaneously.
 
 ```json
-{ "spring": { "stiffness": 300, "damping": 30, "mass": 0.6 } }
+{ "spring": { "stiffness": 300, "damping": 30, "mass": 0.6 }, "durationMs": 220, "ease": "easeInOut" }
 ```
 
-Snapping between poses reads as broken, so a transition is not optional behaviour — a renderer that
-cannot spring should at minimum ease over a comparable duration (~250ms).
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `spring` | object | no | Default `{300, 30, 0.6}`. Used by a renderer that solves springs. |
+| `durationMs` | number | no | Tween length. **When present it wins over `spring`.** |
+| `ease` | `linear` \| `easeIn` \| `easeOut` \| `easeInOut` | no | Tween curve. Default `easeInOut`. |
+
+Snapping between poses reads as broken, so a transition is not optional behaviour. A renderer that
+cannot spring eases over `durationMs` instead; a pack with `target: "lvgl"` always carries one.
+`spring` is written either way, so a browser reading an LVGL pack still has tuned motion.
 
 ---
 
@@ -213,6 +222,28 @@ viewBox.
 
 ---
 
+## Render targets
+
+`target` names the engine the pack was posed for, so a reader knows which parameters to trust.
+
+| `target` | Engine | Glow | `shape: "custom"` | Motion |
+|---|---|---|---|---|
+| `web` | Chromium + SVG (the kiosk renderer) | yes | yes | spring |
+| `lvgl` | LVGL on the device, no shader stage | no — `glow` is `0` | no | tween (`durationMs` + `ease`) |
+
+An `lvgl` pack is **already clamped by the writer**: `glow` is `0`, every eye uses a shape LVGL can
+rasterise (`bar`, `circle`, `oval`, `arc`, `angle`), no `customSvg` is present, and geometry is
+snapped to whole units because LVGL addresses integer pixels. A reader should nonetheless re-clamp
+on load, since a pack can be hand-edited.
+
+Because `target` is additive, a reader that predates it treats every pack as `web` — which is safe:
+an `lvgl` pack carries no field such a reader would mishandle, only fewer of them.
+
+Budget roughly **30fps on the device** against 60 in the browser, so prefer shape animation over
+image or Lottie frames, which eat memory on a robot.
+
+---
+
 ## Capabilities
 
 `shape: "custom"` carries **raw SVG markup** in `customSvg`, rendered as-is and merely sized and
@@ -220,7 +251,8 @@ posed by the eye params — its own fills, gradients and strokes win, so `color`
 `thickness` do not apply to it.
 
 This is the one browser-coupled field in the format. A renderer that cannot execute SVG must
-**declare `custom` unsupported and refuse the pack** rather than approximate it. Markup from an
+**declare `custom` unsupported and refuse the pack** rather than approximate it — which is why an
+`lvgl` pack never carries one. Markup from an
 untrusted author must be sanitised before rendering; the reference renderer runs it through
 DOMPurify with the SVG profile.
 

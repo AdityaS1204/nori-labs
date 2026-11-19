@@ -19,8 +19,12 @@ SCHEMA_VERSION = 1
 EASINGS = ("linear", "easeIn", "easeOut", "easeInOut")
 FITS = ("contain", "cover", "stretch")
 GAZE_MODES = ("off", "random")
+TARGETS = ("web", "lvgl")
 
 DEFAULT_BACKGROUND = "#000000"
+DEFAULT_TARGET = "web"
+DEFAULT_TWEEN_MS = 220.0
+DEFAULT_TWEEN_EASE = "easeInOut"
 
 _HEX6 = re.compile(r"^#[0-9a-fA-F]{6}$")
 _HEX3 = re.compile(r"^#[0-9a-fA-F]{3}$")
@@ -89,9 +93,17 @@ class Ambient:
 @dataclass(frozen=True)
 class Transition:
     spring: Spring = field(default_factory=Spring)
+    # Set for targets with no spring solver (LVGL); wins over `spring` there.
+    durationMs: Optional[float] = None
+    ease: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"spring": self.spring.to_dict()}
+        out: Dict[str, Any] = {"spring": self.spring.to_dict()}
+        if self.durationMs is not None:
+            out["durationMs"] = self.durationMs
+        if self.ease is not None:
+            out["ease"] = self.ease
+        return out
 
 
 @dataclass(frozen=True)
@@ -113,6 +125,7 @@ class FacePack:
     fit: str = "contain"
     transition: Transition = field(default_factory=Transition)
     ambient: Ambient = field(default_factory=Ambient)
+    target: str = DEFAULT_TARGET
     schema: int = SCHEMA_VERSION
 
     @property
@@ -126,6 +139,7 @@ class FacePack:
         return {
             "schema": self.schema,
             "name": self.name,
+            "target": self.target,
             "defaultState": self.defaultState,
             "background": self.background,
             "fit": self.fit,
@@ -217,6 +231,20 @@ def _normalize_eye(eye: Any, field_name: str) -> Dict[str, Any]:
     return e
 
 
+def _transition(t: Mapping[str, Any], target: str) -> Transition:
+    """Keep a stated tween; give a target with no spring solver the default one,
+    so an LVGL pack still describes motion the device can run."""
+    spring = _spring(t.get("spring"), "pack.transition.spring", Spring())
+    stated = t.get("durationMs") is not None or t.get("ease") is not None
+    if not stated and target == DEFAULT_TARGET:
+        return Transition(spring=spring)
+    return Transition(
+        spring=spring,
+        durationMs=_num(t.get("durationMs"), "pack.transition.durationMs", DEFAULT_TWEEN_MS),
+        ease=_one_of(t.get("ease"), "pack.transition.ease", EASINGS, DEFAULT_TWEEN_EASE),
+    )
+
+
 def parse_pack(data: Any) -> FacePack:
     raw = _record(data, "pack")
 
@@ -280,6 +308,7 @@ def parse_pack(data: Any) -> FacePack:
 
     name = raw.get("name")
     background = raw.get("background")
+    target = _one_of(raw.get("target"), "pack.target", TARGETS, DEFAULT_TARGET)
 
     return FacePack(
         schema=SCHEMA_VERSION,
@@ -289,9 +318,8 @@ def parse_pack(data: Any) -> FacePack:
         if background is None
         else normalize_hex(background, "pack.background"),
         fit=_one_of(raw.get("fit"), "pack.fit", FITS, "contain"),
-        transition=Transition(
-            spring=_spring(t.get("spring"), "pack.transition.spring", Spring())
-        ),
+        target=target,
+        transition=_transition(t, target),
         ambient=Ambient(
             blink=Blink(
                 closeMs=_num(blink.get("closeMs"), "pack.ambient.blink.closeMs", d_blink.closeMs),

@@ -15,6 +15,21 @@ import {
 } from "@/lib/face-pack";
 import { NEUTRAL_FACE } from "@/lib/nori-face";
 import { cloneFace, newPreset, type Preset } from "@/lib/presets";
+import { DEFAULT_RENDER } from "@/lib/render-target";
+
+/** A preset posed for LVGL, with detail that engine cannot draw. */
+function lvglPresetWithGlow(): Preset {
+  const preset = presetWith(["Neutral"]);
+  const face = cloneFace(NEUTRAL_FACE);
+  face.glow = 1.4;
+  face.left = { ...face.left, shape: "custom", customSvg: "<svg/>" };
+  face.right = { ...face.right, shape: "custom", customSvg: "<svg/>" };
+  return {
+    ...preset,
+    render: { target: "lvgl", durationMs: 300, ease: "easeOut" },
+    states: [{ ...preset.states[0], face }],
+  };
+}
 
 function presetWith(labels: string[]): Preset {
   const base = newPreset();
@@ -72,6 +87,38 @@ describe("presetToPack", () => {
   it("rejects a preset with no states", () => {
     expect(() => presetToPack({ ...presetWith(["Neutral"]), states: [] })).toThrow(FacePackError);
   });
+
+  it("records the web target and a spring transition by default", () => {
+    const pack = presetToPack(presetWith(["Neutral"]));
+    expect(pack.target).toBe("web");
+    expect(pack.transition).toEqual(DEFAULT_TRANSITION);
+    expect(pack.transition.durationMs).toBeUndefined();
+  });
+
+  it("exports an LVGL preset with a tween instead of a spring", () => {
+    const pack = presetToPack(lvglPresetWithGlow());
+    expect(pack.target).toBe("lvgl");
+    expect(pack.transition.durationMs).toBe(300);
+    expect(pack.transition.ease).toBe("easeOut");
+    // The spring stays so a web renderer reading an LVGL pack still moves.
+    expect(pack.transition.spring).toEqual(DEFAULT_TRANSITION.spring);
+  });
+
+  it("strips what LVGL cannot draw from every exported face", () => {
+    const pack = presetToPack(lvglPresetWithGlow());
+    const face = pack.states[0].face;
+    expect(face.glow).toBe(0);
+    expect(face.left.shape).toBe("bar");
+    expect(face.left.customSvg).toBeUndefined();
+    expect(face.right.customSvg).toBeUndefined();
+  });
+
+  it("keeps the glow when the preset targets the web", () => {
+    const lvgl = lvglPresetWithGlow();
+    const pack = presetToPack({ ...lvgl, render: { ...DEFAULT_RENDER } });
+    expect(pack.states[0].face.glow).toBe(1.4);
+    expect(pack.states[0].face.left.shape).toBe("custom");
+  });
 });
 
 describe("shipped motion defaults", () => {
@@ -103,6 +150,46 @@ describe("parsePack", () => {
     expect(reparsed).toEqual(pack);
     // Idempotent: parsing twice is a fixed point.
     expect(parsePack(JSON.parse(JSON.stringify(reparsed)))).toEqual(reparsed);
+  });
+
+  it("round-trips an LVGL pack, tween and all", () => {
+    const pack = presetToPack(lvglPresetWithGlow());
+    expect(parsePack(JSON.parse(JSON.stringify(pack)))).toEqual(pack);
+  });
+
+  it("reads a pack written before the target field as a web pack", () => {
+    const pack = parsePack({
+      schema: 1,
+      name: "Legacy",
+      defaultState: "neutral",
+      states: [{ id: "neutral", label: "Neutral", face: NEUTRAL_FACE }],
+    });
+    expect(pack.target).toBe("web");
+    expect(pack.states[0].face.glow).toBe(NEUTRAL_FACE.glow);
+  });
+
+  it("clamps a hand-edited LVGL pack that still carries a glow", () => {
+    const pack = parsePack({
+      schema: 1,
+      target: "lvgl",
+      defaultState: "neutral",
+      states: [
+        { id: "neutral", face: { ...NEUTRAL_FACE, glow: 2 } },
+      ],
+    });
+    expect(pack.states[0].face.glow).toBe(0);
+    expect(pack.transition.durationMs).toBe(DEFAULT_RENDER.durationMs);
+  });
+
+  it("rejects an unknown target", () => {
+    expect(() =>
+      parsePack({
+        schema: 1,
+        target: "metal",
+        defaultState: "neutral",
+        states: [{ id: "neutral", face: NEUTRAL_FACE }],
+      }),
+    ).toThrow(FacePackError);
   });
 
   it("fills in motion defaults when a hand-written pack omits them", () => {

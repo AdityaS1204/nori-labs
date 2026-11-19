@@ -134,3 +134,40 @@ class TestNormalizeHex:
     def test_rejects_non_hex(self, bad):
         with pytest.raises(FacePackError):
             normalize_hex(bad, "color")
+
+
+class TestRenderTarget:
+    """`target` is additive in schema 1: it must survive the SDK's re-serialize,
+    since the kiosk reads the JSON this parser writes, not the exported file."""
+
+    def test_defaults_to_web_when_absent(self):
+        pack = parse_pack(minimal())
+        assert pack.target == "web"
+        assert pack.transition.durationMs is None
+        assert "durationMs" not in pack.to_dict()["transition"]
+
+    def test_reads_an_lvgl_pack_with_a_tween(self):
+        pack = parse_pack(
+            minimal(target="lvgl", transition={"durationMs": 300, "ease": "easeOut"})
+        )
+        assert pack.target == "lvgl"
+        assert pack.transition.durationMs == 300
+        assert pack.transition.ease == "easeOut"
+
+    def test_gives_an_lvgl_pack_a_default_tween(self):
+        pack = parse_pack(minimal(target="lvgl"))
+        assert pack.transition.durationMs == 220
+        assert pack.transition.ease == "easeInOut"
+
+    def test_target_and_tween_survive_reserialization(self):
+        pack = parse_pack(
+            minimal(target="lvgl", transition={"durationMs": 300, "ease": "linear"})
+        )
+        served = json.loads(pack.to_json())
+        assert served["target"] == "lvgl"
+        assert served["transition"]["durationMs"] == 300
+        assert parse_pack(served).to_dict() == pack.to_dict()
+
+    def test_rejects_an_unknown_target(self):
+        with pytest.raises(FacePackError):
+            parse_pack(minimal(target="metal"))
