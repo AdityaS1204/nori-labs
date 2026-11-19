@@ -13,21 +13,24 @@ import type { NavMedia } from "@/lib/landing-content";
 const TIP_OFFSET = 16;
 
 const FOLLOW = { stiffness: 520, damping: 42, mass: 0.6 } as const;
+const EASE = [0.23, 1, 0.32, 1] as const;
 
 type Props = { media: NavMedia; className?: string };
 
 /**
- * Hover preview for a nav tab: the clip plays muted while the pointer is over
- * it, under a tooltip that trails the cursor.
+ * The preview beside a tab's links: the clip for whichever link the pointer is
+ * on, under a tooltip that trails the cursor.
  *
- * The pointer position is clamped to the frame so the tooltip stays inside the
- * squircle's clip path, and it is written to motion values rather than state,
- * so following the cursor never re-renders the nav.
+ * Media swaps crossfade between stacked layers, so a new clip is already
+ * painted before the old one clears rather than flashing the frame empty.
+ * Pointer position is clamped to the frame to keep the tooltip inside the
+ * squircle's clip path, and lives in motion values rather than state, so
+ * following the cursor never re-renders the nav.
  */
 export default function NavVideo({ media, className = "" }: Props) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
+  const soundRef = useRef<HTMLVideoElement>(null);
   const [hovered, setHovered] = useState(false);
   const [muted, setMuted] = useState(true);
   const reduced = useReducedMotion();
@@ -62,16 +65,10 @@ export default function NavVideo({ media, className = "" }: Props) {
   const onEnter = (event: React.PointerEvent) => {
     setHovered(true);
     place(event, true);
-    if (!reduced) void videoRef.current?.play().catch(() => {});
-  };
-
-  const onLeave = () => {
-    setHovered(false);
-    videoRef.current?.pause();
   };
 
   const toggleSound = () => {
-    const video = videoRef.current;
+    const video = soundRef.current;
     if (!video) return;
 
     video.muted = !video.muted;
@@ -85,20 +82,39 @@ export default function NavVideo({ media, className = "" }: Props) {
         ref={frameRef}
         onPointerEnter={onEnter}
         onPointerMove={place}
-        onPointerLeave={onLeave}
+        onPointerLeave={() => setHovered(false)}
         className={`relative overflow-hidden bg-black/40 ${className}`}
       >
-        <video
-          ref={videoRef}
-          src={media.src}
-          poster={media.poster}
-          aria-label={media.label}
-          className="h-full w-full object-cover"
-          muted={muted}
-          loop
-          playsInline
-          preload="none"
-        />
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={media.clips.join("|")}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={reduced ? { duration: 0 } : { duration: 0.28, ease: EASE }}
+            className="absolute inset-0 grid"
+            style={{ gridTemplateRows: `repeat(${media.clips.length}, 1fr)` }}
+          >
+            {media.clips.map((src, i) => (
+              <video
+                key={src}
+                // Only the first clip can carry sound: unmuting a stack would
+                // play two soundtracks over each other.
+                ref={i === 0 ? soundRef : undefined}
+                src={src}
+                poster={i === 0 ? media.poster : undefined}
+                aria-label={i === 0 ? media.label : undefined}
+                aria-hidden={i > 0}
+                className="h-full w-full object-cover"
+                autoPlay
+                muted={muted || i > 0}
+                loop
+                playsInline
+                preload="none"
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
 
         <AnimatePresence>
           {hovered ? (
@@ -111,7 +127,7 @@ export default function NavVideo({ media, className = "" }: Props) {
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
-                transition={reduced ? { duration: 0 } : { duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+                transition={reduced ? { duration: 0 } : { duration: 0.16, ease: EASE }}
                 className="-translate-x-1/2 whitespace-nowrap rounded-[14px] bg-black px-4 py-2.5 text-[13.5px] font-medium leading-none text-white shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
                 style={{ translateY: `calc(-100% - ${TIP_OFFSET}px)` }}
               >

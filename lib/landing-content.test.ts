@@ -98,14 +98,26 @@ describe("landing content", () => {
     }
   });
 
-  it("gives the tab preview a clip and a poster", () => {
-    const media = NAV_LINKS.filter((item) => item.media).map((item) => item.media!);
-    expect(media).toHaveLength(1);
-    for (const { src, poster, label } of media) {
-      expect(src).toMatch(/^https:\/\/.+\.mp4$/);
+  it("gives every nav preview clips, a poster and a label", () => {
+    const media = [
+      ...NAV_LINKS.map((item) => item.media),
+      ...NAV_LINKS.flatMap((item) => item.items.map((child) => child.media)),
+    ].filter((m) => m !== undefined);
+
+    expect(media.length).toBeGreaterThanOrEqual(4);
+    for (const { clips, poster, label } of media) {
+      expect(clips.length).toBeGreaterThan(0);
+      for (const src of clips) expect(src).toMatch(/^https:\/\/.+\.mp4$/);
       expect(poster).toMatch(/^https:\/\//);
       expect(label.length).toBeGreaterThan(0);
     }
+  });
+
+  // Hovering a link swaps the clip beside it, so the whole tab needs covering.
+  it("gives the home tab a clip on every link", () => {
+    const home = NAV_LINKS.find((item) => item.label === "In the home");
+    expect(home?.items.every((child) => child.media)).toBe(true);
+    expect(home?.items[0].media?.clips).toHaveLength(2);
   });
 
   it("uses absolute https urls for socials", () => {

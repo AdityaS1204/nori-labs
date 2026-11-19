@@ -54,6 +54,7 @@ function Fillet({ side }: { side: "left" | "right" }) {
 
 export default function TabNav() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [hoveredChild, setHoveredChild] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const reduced = useReducedMotion();
@@ -61,6 +62,7 @@ export default function TabNav() {
   const openTab = useCallback((i: number) => {
     clearTimeout(closeTimer.current);
     setOpenIdx(i);
+    setHoveredChild(0);
   }, []);
 
   const scheduleClose = useCallback(() => {
@@ -87,6 +89,8 @@ export default function TabNav() {
     : { type: "spring" as const, stiffness: 400, damping: 40, mass: 1 };
 
   const active = openIdx === null ? null : NAV_LINKS[openIdx];
+  // A tab's own clip is the fallback for links that bring none of their own.
+  const preview = active ? (active.items[hoveredChild]?.media ?? active.media) : undefined;
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
@@ -197,13 +201,17 @@ export default function TabNav() {
                   layout
                   transition={reduced ? { duration: 0 } : { duration: 0.22, ease: EASE }}
                   className={`grid gap-2 rounded-[16px] p-2 ${
-                    active.media ? "sm:grid-cols-[1.15fr_1fr]" : ""
+                    preview ? "sm:grid-cols-[1.15fr_1fr]" : ""
                   }`}
                   style={{ backgroundColor: SURFACE }}
                 >
                   <ul className="m-0 flex list-none flex-col gap-1 p-0" role="list">
-                    {active.items.map((child) => (
-                      <li key={child.href + child.label}>
+                    {active.items.map((child, childIdx) => (
+                      <li
+                        key={child.href + child.label}
+                        onPointerEnter={() => setHoveredChild(childIdx)}
+                        onFocus={() => setHoveredChild(childIdx)}
+                      >
                         <Squircle cornerRadius={RADIUS.control}>
                           <Link
                             href={child.href}
@@ -231,8 +239,8 @@ export default function TabNav() {
                     ))}
                   </ul>
 
-                  {active.media ? (
-                    <NavVideo media={active.media} className="h-full min-h-[136px]" />
+                  {preview ? (
+                    <NavVideo media={preview} className="h-full min-h-[136px]" />
                   ) : null}
                 </motion.div>
               </div>

@@ -39,10 +39,18 @@ export type TeachingStep = { title: string; body: string };
 
 export type Spec = { label: string; value: string };
 
-export type NavChild = { href: string; label: string; note: string };
+export type NavChild = { href: string; label: string; note: string; media?: NavMedia };
 
-/** Footage shown beside a tab's links, previewed on hover. */
-export type NavMedia = { src: string; poster: string; label: string };
+/**
+ * Footage shown beside a tab's links. Several clips tile into one frame as
+ * horizontal bands, which keeps wide room shots readable where a side-by-side
+ * split would crop them to slivers.
+ */
+export type NavMedia = {
+  clips: readonly string[];
+  poster: string;
+  label: string;
+};
 
 export type NavItem = {
   href: string;
@@ -56,7 +64,9 @@ export const NAV_LINKS: readonly NavItem[] = [
     href: "#what-it-is",
     label: "Nori A3",
     media: {
-      src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795064823/linkedin-video_lflhe1.mp4",
+      clips: [
+        "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795064823/linkedin-video_lflhe1.mp4",
+      ],
       poster:
         "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_1,c_fill,w_640,h_360,q_auto,f_jpg/v1795064823/linkedin-video_lflhe1.jpg",
       label: "Launch Video",
@@ -71,9 +81,47 @@ export const NAV_LINKS: readonly NavItem[] = [
     href: "#the-face",
     label: "In the home",
     items: [
-      { href: "#what-it-is", label: "Everyday tasks", note: "Kitchen, tidying, laundry, dishes." },
-      { href: "#teach-it", label: "Teach it a skill", note: "Demonstrate once, it generalises." },
-      { href: "/library", label: "Expression library", note: "Faces the community has made." },
+      {
+        href: "#what-it-is",
+        label: "Everyday tasks",
+        note: "Kitchen, tidying, laundry, dishes.",
+        media: {
+          clips: [
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069078/evd-t1_kvjep7.mp4",
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069077/evd-t2_konwfd.mp4",
+          ],
+          poster:
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_5,c_fill,w_640,h_360,q_auto,f_jpg/v1795069078/evd-t1_kvjep7.jpg",
+          label: "Around the house",
+        },
+      },
+      {
+        href: "#teach-it",
+        label: "Teach it a skill",
+        note: "Demonstrate once, it generalises.",
+        media: {
+          clips: [
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069077/skill-lib_jsvqlq.mp4",
+          ],
+          poster:
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_2,c_fill,w_640,h_360,q_auto,f_jpg/v1795069077/skill-lib_jsvqlq.jpg",
+          label: "Training a skill",
+        },
+      },
+      {
+        href: "/library",
+        label: "Expression library",
+        note: "Faces the community has made.",
+        // Standing in for the playground demo until that one is recorded.
+        media: {
+          clips: [
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/q_auto,w_640/v1795069077/skill-lib_jsvqlq.mp4",
+          ],
+          poster:
+            "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_2,c_fill,w_640,h_360,q_auto,f_jpg/v1795069077/skill-lib_jsvqlq.jpg",
+          label: "Training a skill",
+        },
+      },
     ],
   },
   {

@@ -53,10 +53,21 @@ describe("NavVideo", () => {
     expect(media).toBeDefined();
   });
 
-  it("waits for a hover before fetching the clip", () => {
+  it("posters the frame and leaves fetching to playback", () => {
     expect(markup).toContain('preload="none"');
     expect(markup).toContain(`poster="${media!.poster}"`);
-    expect(markup).not.toContain("autoplay");
+  });
+
+  it("tiles a multi-clip preview into one frame, with one soundtrack", () => {
+    const stacked = NAV_LINKS.flatMap((item) => item.items)
+      .map((child) => child.media)
+      .find((m) => m && m.clips.length > 1)!;
+    const html = decode(renderToStaticMarkup(<NavVideo media={stacked} />));
+
+    expect(html.match(/<video/g)).toHaveLength(stacked.clips.length);
+    for (const src of stacked.clips) expect(html).toContain(`src="${src}"`);
+    // Every clip past the first is muted outright and hidden from the a11y tree.
+    expect(html.match(/aria-hidden="true"/g)).toHaveLength(stacked.clips.length - 1);
   });
 
   it("starts muted and looping, with the sound toggle labelled", () => {
