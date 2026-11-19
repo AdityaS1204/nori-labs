@@ -15,6 +15,7 @@ import {
   DEFAULT_TRANSITION,
   type AmbientSpec,
   type BlinkSpec,
+  type Easing,
   type FitMode,
   type GazeSpec,
   type TransitionSpec,
@@ -54,7 +55,7 @@ interface NoriFaceLiveProps {
    * disables blinking, or pass a pack's `ambient` block.
    */
   ambient?: boolean | AmbientSpec;
-  /** Spring used when morphing between faces. Defaults to the shipped values. */
+  /** Spring or tween used when morphing between faces. Defaults to the shipped spring. */
   transition?: TransitionSpec;
   /**
    * Eye movement mode: `"off"` holds the gaze centred, `"cursor"` makes the
@@ -209,7 +210,14 @@ function useBlink(enabled: boolean, spec: BlinkSpec) {
   return blink;
 }
 
-type Spring = { type: "spring"; stiffness: number; damping: number; mass: number };
+/**
+ * How one pose morphs into the next. A spring when the pack ships one, a tween
+ * when it states `durationMs` — which an LVGL pack always does, since the
+ * device has no spring solver and the preview must match what it will do.
+ */
+type Morph =
+  | { type: "spring"; stiffness: number; damping: number; mass: number }
+  | { type: "tween"; duration: number; ease: Easing };
 
 function LiveEye({
   eye,
@@ -217,14 +225,14 @@ function LiveEye({
   color,
   blink,
   side,
-  spring,
+  morph,
 }: {
   eye: NoriEyeParams;
   cx: number;
   color: string;
   blink: MotionValue<number>;
   side: "left" | "right";
-  spring: Spring;
+  morph: Morph;
 }) {
   const w = eye.width;
   const h = eye.height;
@@ -246,7 +254,7 @@ function LiveEye({
           scaleY: Math.max(eye.openness, 0.02),
           rotate: eye.tilt,
         }}
-        transition={spring}
+        transition={morph}
       >
         {shape === "bar" ? (
           <motion.rect
@@ -259,7 +267,7 @@ function LiveEye({
               rx: r,
               fill: color,
             }}
-            transition={spring}
+            transition={morph}
           />
         ) : shape === "custom" ? (
           <CustomSvgEye
@@ -310,14 +318,14 @@ function LiveBrow({
   cx,
   color,
   mirror,
-  spring,
+  morph,
 }: {
   brow: NoriBrowParams;
   eye: NoriEyeParams;
   cx: number;
   color: string;
   mirror: 1 | -1;
-  spring: Spring;
+  morph: Morph;
 }) {
   // Float above the eye's base top edge (clamped to stay in the viewBox).
   const browY = browCenterY(eye, brow);
@@ -327,7 +335,7 @@ function LiveBrow({
       style={{ transformBox: "fill-box", transformOrigin: "center" }}
       initial={false}
       animate={{ x: cx - CX, y: browY - CY, rotate: brow.tilt * mirror }}
-      transition={spring}
+      transition={morph}
     >
       <path d={buildBrowPath(brow)} fill={color} transform={`translate(${CX} ${CY})`} />
     </motion.g>
@@ -352,10 +360,13 @@ export default function NoriFaceLive({
   const blink = useBlink(blinkEnabled, ambientSpec.blink);
   const { svgRef, gazeX, gazeY } = useGaze(gazeMode, reduce, ambientSpec.gaze);
 
-  const s = transition.spring;
-  const spring = useMemo<Spring>(
-    () => ({ type: "spring", stiffness: s.stiffness, damping: s.damping, mass: s.mass }),
-    [s.stiffness, s.damping, s.mass],
+  const { spring: s, durationMs, ease } = transition;
+  const morph = useMemo<Morph>(
+    () =>
+      durationMs === undefined
+        ? { type: "spring", stiffness: s.stiffness, damping: s.damping, mass: s.mass }
+        : { type: "tween", duration: durationMs / 1000, ease: ease ?? "easeInOut" },
+    [durationMs, ease, s.stiffness, s.damping, s.mass],
   );
 
   const { color, glow, gap, left, right, browsEnabled, leftBrow, rightBrow } =
@@ -378,8 +389,8 @@ export default function NoriFaceLive({
       <g style={{ filter: glowFilter }}>
         {/* Gaze: shifts the eyes (and brows) toward where they're looking. */}
         <motion.g style={{ x: gazeX, y: gazeY }}>
-          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} side="left" spring={spring} />
-          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} side="right" spring={spring} />
+          <LiveEye eye={left} cx={CX - gap / 2} color={color} blink={blink} side="left" morph={morph} />
+          <LiveEye eye={right} cx={CX + gap / 2} color={color} blink={blink} side="right" morph={morph} />
           {browsEnabled && (
             <>
               <LiveBrow
@@ -388,7 +399,7 @@ export default function NoriFaceLive({
                 cx={CX - gap / 2}
                 color={color}
                 mirror={1}
-                spring={spring}
+                morph={morph}
               />
               <LiveBrow
                 brow={rightBrow}
@@ -396,7 +407,7 @@ export default function NoriFaceLive({
                 cx={CX + gap / 2}
                 color={color}
                 mirror={-1}
-                spring={spring}
+                morph={morph}
               />
             </>
           )}
