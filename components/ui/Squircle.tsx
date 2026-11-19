@@ -34,8 +34,11 @@ export default function Squircle({
     const node = ref.current;
     if (!node) return;
 
+    // Layout size, not getBoundingClientRect: the rect is scaled by any
+    // animating ancestor transform (the nav panel's `layout`), which would bake
+    // a clip path a fraction of the real box and never correct itself.
     const apply = () => {
-      const { width, height } = node.getBoundingClientRect();
+      const { offsetWidth: width, offsetHeight: height } = node;
       node.style.clipPath =
         width > 0 && height > 0
           ? `path('${getSvgPath({ width, height, cornerRadius, cornerSmoothing })}')`
