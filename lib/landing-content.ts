@@ -156,7 +156,6 @@ export const MARK = {
 } as const;
 
 export const HERO = {
-  label: "Nori A3 / home robot",
   headline: [
     ["Meet", { mark: true }, "Nori A3."],
     ["You teach it by showing."],
@@ -183,7 +182,6 @@ export const SUPPORTING_DETAILS: readonly SupportingDetail[] = [
 ];
 
 export const WHAT_IT_IS = {
-  label: "01 / what it is",
   headline: "Nori A3 is a bimanual home robot that you teach by showing it, not by programming it.",
   hero: {
     slot: "In the kitchen",
@@ -212,7 +210,6 @@ export const WHAT_IT_IS = {
 } as const;
 
 export const THE_FACE = {
-  label: "03 / the face",
   headline: "Its face tells you what it's doing.",
   body:
     "A robot you teach is a robot that runs on its own, so you need to read it at a " +
@@ -223,7 +220,6 @@ export const THE_FACE = {
 } as const;
 
 export const HARDWARE = {
-  label: "04 / hardware",
   headline: "What is on the body.",
   cards: [
     {
@@ -267,7 +263,6 @@ export const HARDWARE = {
 } as const;
 
 export const TEACH_IT = {
-  label: "02 / teach it",
   headline: "Teach it a skill.",
   body:
     "Train your Nori at home, share its skills anywhere. The Nori Lab laptop app " +
@@ -304,7 +299,6 @@ export const TEACH_IT = {
 export type Limit = { title: string; body: string };
 
 export const LIMITS = {
-  label: "05 / honestly",
   headline: "What A3 can't do yet.",
   body:
     "A robot you teach is a robot that will fail at things. Here is where it stands " +
@@ -330,7 +324,6 @@ export const LIMITS = {
 } as const;
 
 export const CLOSING = {
-  label: "06 / order",
   headline: ["Full price,", "no deposit."],
   price: "$1,688",
   body: "Reserve a NORI A3 at the launch price. Ships Fall 2026, assembled in San Francisco.",

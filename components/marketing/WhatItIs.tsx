@@ -1,7 +1,6 @@
 import { WHAT_IT_IS } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 export default function WhatItIs() {
   return (
@@ -11,7 +10,6 @@ export default function WhatItIs() {
       className="scroll-mt-20 bg-cream py-20 md:py-28"
     >
       <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 sm:px-8">
-        <SectionLabel tone="light">{WHAT_IT_IS.label}</SectionLabel>
 
         <Reveal>
           <h2

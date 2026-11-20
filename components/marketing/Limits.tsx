@@ -2,13 +2,11 @@ import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
 import { LIMITS } from "@/lib/landing-content";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 export default function Limits() {
   return (
     <section id="limits" aria-labelledby="limits-headline" className="scroll-mt-20 bg-ink">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-9 px-5 py-20 sm:px-8 md:py-28">
-        <SectionLabel>{LIMITS.label}</SectionLabel>
 
         <Reveal className="flex flex-col gap-5">
           <h2

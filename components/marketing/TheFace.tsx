@@ -6,13 +6,11 @@ import { RADIUS } from "@/components/ui/radius";
 import { THE_FACE } from "@/lib/landing-content";
 import { FACE_GRID } from "@/lib/landing-faces";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 export default function TheFace() {
   return (
     <section id="the-face" aria-labelledby="the-face-headline" className="scroll-mt-20 bg-ink">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-9 px-5 py-20 sm:px-8 md:py-28">
-        <SectionLabel>{THE_FACE.label}</SectionLabel>
 
         <Reveal className="flex flex-col gap-5">
           <h2

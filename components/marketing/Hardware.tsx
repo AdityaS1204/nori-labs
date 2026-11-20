@@ -3,7 +3,6 @@ import { RADIUS } from "@/components/ui/radius";
 import { HARDWARE } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 const [head, arm, base, workshop] = HARDWARE.cards;
 
@@ -32,7 +31,6 @@ export default function Hardware() {
   return (
     <section id="hardware" aria-labelledby="hardware-headline" className="scroll-mt-20 bg-cream">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 py-20 sm:px-8 md:py-28">
-        <SectionLabel tone="light">{HARDWARE.label}</SectionLabel>
 
         <Reveal>
           <h2

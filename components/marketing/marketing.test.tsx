@@ -38,7 +38,7 @@ const text = (node: React.ReactElement) =>
 describe("Hero", () => {
   const html = markup(<Hero />);
 
-  it("renders both headline lines, the label and both calls to action", () => {
+  it("renders both headline lines and both calls to action", () => {
     const body = text(<Hero />);
     for (const line of HERO.headline) {
       const words = line.filter((p): p is string => typeof p === "string").join(" ");

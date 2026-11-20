@@ -6,13 +6,11 @@ import { RADIUS } from "@/components/ui/radius";
 import HeadlineMark from "./HeadlineMark";
 import HeroMedia from "./HeroMedia";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 export default function Hero() {
   return (
     <section id="intro" aria-labelledby="hero-headline" className="bg-ink">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 pb-6 pt-28 sm:px-8 md:pt-32">
-        <SectionLabel>{HERO.label}</SectionLabel>
 
         <Reveal className="flex flex-col gap-7">
           <h1

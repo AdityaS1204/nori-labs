@@ -64,13 +64,12 @@ describe("landing content", () => {
     }
   });
 
-  it("numbers the sections in the order the page renders them", () => {
-    const numbers = [WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, LIMITS, CLOSING].map((s) =>
-      Number(s.label.slice(0, 2)),
-    );
-    expect(numbers.every(Number.isFinite)).toBe(true);
-    expect([...numbers].sort((a, b) => a - b)).toEqual(numbers);
-    expect(new Set(numbers).size).toBe(numbers.length);
+  // The numbered eyebrows ("01 / what it is") are gone, and with them the
+  // renumbering every reorder of the page used to require.
+  it("carries no section eyebrow label", () => {
+    for (const section of [HERO, WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, LIMITS, CLOSING]) {
+      expect(section).not.toHaveProperty("label");
+    }
   });
 
   it("carries the real hardware specs through unchanged", () => {

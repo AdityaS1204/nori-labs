@@ -5,14 +5,12 @@ import { RADIUS } from "@/components/ui/radius";
 import { TEACH_IT } from "@/lib/landing-content";
 import MediaCard from "./MediaCard";
 import Reveal from "./Reveal";
-import SectionLabel from "./SectionLabel";
 
 export default function TeachIt() {
   return (
     <section id="teach-it" aria-labelledby="teach-it-headline" className="scroll-mt-20 bg-cream">
       <div className="mx-auto grid max-w-[1180px] gap-10 px-5 pb-24 sm:px-8 md:grid-cols-2 md:items-center md:gap-14">
         <Reveal className="flex flex-col items-start gap-5">
-          <SectionLabel tone="light">{TEACH_IT.label}</SectionLabel>
 
           <h2
             id="teach-it-headline"
