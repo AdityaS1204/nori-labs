@@ -243,7 +243,7 @@ describe("media slots", () => {
 
   it("renders a looping muted video for every filled slot", () => {
     const filled = ALL_SLOTS.filter((m) => m.src);
-    expect(filled.length).toBe(3);
+    expect(filled.length).toBe(4);
     for (const m of filled) {
       expect(everySection).toContain(`src="${m.src}"`);
       // A filled slot is footage, not a placeholder graphic.

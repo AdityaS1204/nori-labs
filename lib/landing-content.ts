@@ -202,11 +202,11 @@ export const WHAT_IT_IS = {
       src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1794986979/kitchen-1_egkrs0.mp4",
     },
     {
-      slot: "Video slot 04 — close-up of the hand",
+      slot: "Close-up of the arm",
       note: "Slow, macro, soft light.",
       tone: "ink",
       ratio: "16 / 10",
-      video: true,
+      src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1795163732/nori-arm_ohhzw1.mp4",
     },
   ] satisfies MediaSlot[],
 } as const;
