@@ -17,7 +17,7 @@ export default function Closing() {
 
         <h2
           id="closing-headline"
-          className="m-0 font-display text-[clamp(32px,5vw,54px)] font-semibold leading-[1.02] tracking-[-0.03em] text-white"
+          className="m-0 font-display text-[clamp(32px,5vw,54px)] font-semibold leading-[1.1] tracking-[-0.01em] text-white"
         >
           {CLOSING.headline.map((line) => (
             <span key={line} className="block">
@@ -26,7 +26,7 @@ export default function Closing() {
           ))}
         </h2>
 
-        <p className="m-0 font-display text-[clamp(28px,3.6vw,40px)] font-semibold leading-none tracking-[-0.03em] text-lime tabular-nums">
+        <p className="m-0 font-display text-[clamp(28px,3.6vw,40px)] font-semibold leading-none tracking-[-0.01em] text-lime tabular-nums">
           {CLOSING.price}
         </p>
 

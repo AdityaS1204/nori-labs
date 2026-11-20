@@ -11,7 +11,7 @@ export default function Limits() {
         <Reveal className="flex flex-col gap-5">
           <h2
             id="limits-headline"
-            className="m-0 font-display text-[clamp(26px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.03em] text-white"
+            className="m-0 font-display text-[clamp(26px,4vw,44px)] font-semibold leading-[1.18] tracking-[-0.01em] text-white"
           >
             {LIMITS.headline}
           </h2>

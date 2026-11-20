@@ -78,7 +78,7 @@ export default function MediaCard({ media, className = "", cornerRadius = RADIUS
       ) : null}
 
       {media.overlay ? (
-        <p className="absolute bottom-5 left-5 z-10 m-0 max-w-[14ch] font-display text-[clamp(22px,3.4vw,38px)] font-semibold leading-[1.04] tracking-[-0.025em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
+        <p className="absolute bottom-5 left-5 z-10 m-0 max-w-[14ch] font-display text-[clamp(22px,3.4vw,38px)] font-semibold leading-[1.14] tracking-[-0.008em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
           {media.overlay}
         </p>
       ) : null}
