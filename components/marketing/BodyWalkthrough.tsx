@@ -92,7 +92,9 @@ export default function BodyWalkthrough() {
   useMotionValueEvent(progress, "change", (p) => {
     wanted.current = Math.min(Math.max(p, 0), 1);
 
-    const index = Math.min(STAGES.length - 1, Math.floor(wanted.current * STAGES.length));
+    // Cued to the shot, not to even quarters: the camera spends longer on the
+    // base than on the face, so the captions have to follow it.
+    const index = STAGES.reduce((found, stage, i) => (wanted.current >= stage.at ? i : found), 0);
     setActive((current) => (current === index ? current : index));
 
     if (frame.current) return;

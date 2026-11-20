@@ -242,6 +242,12 @@ export type WalkthroughStage = {
   id: string;
   title: string;
   body: string;
+  /**
+   * Where in the clip this stage begins, 0-1. Read off the footage: the camera
+   * holds on the face, the grippers, the chest panel and then the base, so the
+   * captions are cued to the shot rather than to even quarters.
+   */
+  at: number;
   /** Marks a claim the spec sheet cannot back yet. Printed on the caption. */
   unconfirmed?: true;
 };
@@ -253,12 +259,20 @@ export type WalkthroughStage = {
  */
 export const WALKTHROUGH = {
   /**
-   * The push-in from full body to base. Unset until it is shot: with no src the
-   * section renders its stages as a plain list, so it is honest either way.
+   * The push-in from full body to base. `src` is optional by design: with no
+   * clip the section renders its stages as a plain list rather than an empty
+   * pinned frame.
    */
   clip: {
-    src: undefined as string | undefined,
-    poster: undefined as string | undefined,
+    /**
+     * Delivered through ki_0.2 on purpose. The source mp4 carries a single
+     * keyframe for its ten seconds, so every backwards seek would decode from
+     * frame zero; at a fifth of a second it scrubs, and q_auto brings it in at
+     * 1.2MB rather than the source's 3.4MB. ac_none drops the silent track.
+     */
+    src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/ki_0.2,vc_h264,ac_none,q_auto,w_1280/v1795168246/nori-fullbd_sopw1d.mp4",
+    poster:
+      "https://res.cloudinary.com/dp5tdrmf8/video/upload/so_0,c_fill,w_1280,h_720,q_auto,f_jpg/v1795168246/nori-fullbd_sopw1d.jpg",
     label: "Nori A3, full body down to the base",
   },
   /** Stands in for the clip while it is missing. */
@@ -277,14 +291,8 @@ export const WALKTHROUGH = {
         "The head screen is a status display, not decoration: the four states above " +
         "are what it shows. Panel type and size are not published yet. Cameras sit on " +
         "the head and the neck.",
+      at: 0,
       unconfirmed: true,
-    },
-    {
-      id: "torso",
-      title: "The torso",
-      body:
-        "Battery and compute ride in the body, good for six to eight hours between " +
-        "charges, with the speaker and microphone that take spoken commands.",
     },
     {
       id: "arm",
@@ -292,6 +300,15 @@ export const WALKTHROUGH = {
       body:
         "Two of them, 7+1 degrees of freedom each and 1.5kg of payload per arm. A 720p " +
         "camera on each gripper watches the hand's own work.",
+      at: 0.16,
+    },
+    {
+      id: "torso",
+      title: "The torso",
+      body:
+        "Battery and compute ride in the body, good for six to eight hours between " +
+        "charges, with the speaker and microphone that take spoken commands.",
+      at: 0.38,
     },
     {
       id: "base",
@@ -299,6 +316,7 @@ export const WALKTHROUGH = {
       body:
         "A 12m lidar scans at 8-12Hz, resolving 0.72 degrees at 10Hz, so the robot has " +
         "the shape of the room before it moves through it.",
+      at: 0.62,
     },
   ] satisfies WalkthroughStage[],
 } as const;

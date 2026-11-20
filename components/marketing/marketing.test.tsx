@@ -121,11 +121,18 @@ describe("Hardware", () => {
     }
   });
 
-  it("marks the unbacked claim once, and pins the clip nowhere until it exists", () => {
-    const body = text(<Hardware />);
-    expect(body.match(/unconfirmed/g)).toHaveLength(1);
-    // No footage yet: the stage shows the placeholder, not an empty video.
-    expect(markup(<Hardware />)).toContain(`aria-label="Placeholder: ${WALKTHROUGH.fallback.slot}"`);
+  it("marks the unbacked claim exactly once", () => {
+    expect(text(<Hardware />).match(/unconfirmed/g)).toHaveLength(1);
+  });
+
+  // The server render is list mode, which hands the clip over with controls
+  // rather than scrubbing it, so the footage is reachable without JS.
+  it("serves the walkthrough clip with its poster", () => {
+    const html = markup(<Hardware />);
+    expect(html).toContain(`src="${WALKTHROUGH.clip.src}"`);
+    expect(html).toContain(`poster="${WALKTHROUGH.clip.poster}"`);
+    expect(html).toContain("controls");
+    expect(html).not.toContain("autoplay");
   });
 
   it("renders every spec label and value", () => {
@@ -232,15 +239,15 @@ const ALL_SLOTS: MediaSlot[] = [
   HERO.media,
   WHAT_IT_IS.hero,
   ...WHAT_IT_IS.pair,
-  WALKTHROUGH.fallback,
   TEACH_IT.media,
   CLOSING.media,
 ];
 
+// Hardware is left out: its only footage is the walkthrough clip, which is not
+// a MediaSlot and would throw off both counts below.
 const everySection = [
   markup(<Hero />),
   markup(<WhatItIs />),
-  markup(<Hardware />),
   markup(<TeachIt />),
   markup(<Closing />),
 ].join("");

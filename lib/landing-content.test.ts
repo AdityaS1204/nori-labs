@@ -75,7 +75,13 @@ describe("landing content", () => {
 
   it("walks the body top to bottom, once per stage", () => {
     const ids = WALKTHROUGH.stages.map((s) => s.id);
-    expect(ids).toEqual(["head", "torso", "arm", "base"]);
+    expect(ids).toEqual(["head", "arm", "torso", "base"]);
+
+    // Cue points are fractions of the clip, in order, opening on frame one.
+    const cues = WALKTHROUGH.stages.map((s) => s.at);
+    expect(cues[0]).toBe(0);
+    expect([...cues].sort((a, b) => a - b)).toEqual(cues);
+    expect(Math.max(...cues)).toBeLessThan(1);
     for (const { title, body } of WALKTHROUGH.stages) {
       expect(title.length).toBeGreaterThan(0);
       expect(body.length).toBeGreaterThan(0);
