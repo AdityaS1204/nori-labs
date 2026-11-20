@@ -11,6 +11,7 @@ import {
   SUPPORTING_DETAILS,
   TEACH_IT,
   THE_FACE,
+  WALKTHROUGH,
   WHAT_IT_IS,
   type MediaSlot,
 } from "@/lib/landing-content";
@@ -20,7 +21,7 @@ const allMedia: MediaSlot[] = [
   HERO.media,
   WHAT_IT_IS.hero,
   ...WHAT_IT_IS.pair,
-  ...HARDWARE.cards.map((c) => c.media),
+  WALKTHROUGH.fallback,
   TEACH_IT.media,
   CLOSING.media,
 ];
@@ -29,7 +30,7 @@ describe("landing content", () => {
   it("fills every slot the design defines", () => {
     expect(HERO.headline).toHaveLength(2);
     expect(WHAT_IT_IS.pair).toHaveLength(2);
-    expect(HARDWARE.cards).toHaveLength(4);
+    expect(WALKTHROUGH.stages).toHaveLength(4);
     expect(FACE_GRID).toHaveLength(4);
     expect(TEACH_IT.steps).toHaveLength(4);
     expect(SUPPORTING_DETAILS).toHaveLength(3);
@@ -70,6 +71,24 @@ describe("landing content", () => {
     for (const section of [HERO, WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, LIMITS, CLOSING]) {
       expect(section).not.toHaveProperty("label");
     }
+  });
+
+  it("walks the body top to bottom, once per stage", () => {
+    const ids = WALKTHROUGH.stages.map((s) => s.id);
+    expect(ids).toEqual(["head", "torso", "arm", "base"]);
+    for (const { title, body } of WALKTHROUGH.stages) {
+      expect(title.length).toBeGreaterThan(0);
+      expect(body.length).toBeGreaterThan(0);
+    }
+  });
+
+  // The panel type is the one thing the walkthrough cannot source from the spec
+  // sheet, so it is flagged on the stage instead of written as fact.
+  it("flags the unbacked claim rather than asserting it", () => {
+    const flagged = WALKTHROUGH.stages.filter((s) => s.unconfirmed);
+    expect(flagged).toHaveLength(1);
+    expect(flagged[0]!.id).toBe("head");
+    for (const { value } of HARDWARE.specs) expect(value).not.toMatch(/touch/i);
   });
 
   it("carries the real hardware specs through unchanged", () => {

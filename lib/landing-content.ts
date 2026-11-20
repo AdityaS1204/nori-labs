@@ -41,8 +41,6 @@ export type HeadlinePart = string | { mark: true };
 
 export type SupportingDetail = { label: string; value: string };
 
-export type HardwareCard = { title: string; caption: string; media: MediaSlot };
-
 export type TeachingStep = { title: string; body: string };
 
 export type Spec = { label: string; value: string };
@@ -221,28 +219,6 @@ export const THE_FACE = {
 
 export const HARDWARE = {
   headline: "What is on the body.",
-  cards: [
-    {
-      title: "Head and face",
-      caption: "Screen face, plus the head and neck cameras.",
-      media: { slot: "Image slot 05", tone: "sage", ratio: "3 / 4" },
-    },
-    {
-      title: "Arm",
-      caption: "7+1 DOF, 1.5kg payload per arm.",
-      media: { slot: "Image slot 06", tone: "haze", ratio: "4 / 3" },
-    },
-    {
-      title: "Base",
-      caption: "12m lidar, 8-12Hz scanning.",
-      media: { slot: "Image slot 07", tone: "ink", ratio: "4 / 3" },
-    },
-    {
-      title: "Workshop",
-      caption: "Assembled in San Francisco.",
-      media: { slot: "Image slot 08", tone: "sage", ratio: "16 / 7" },
-    },
-  ] satisfies HardwareCard[],
   specs: [
     { label: "Arms", value: "7+1 DOF, 1.5kg payload per-arm." },
     {
@@ -260,6 +236,71 @@ export const HARDWARE = {
       value: "The Nori Lab laptop app helps you train, operate, and manage your robot.",
     },
   ] satisfies Spec[],
+} as const;
+
+export type WalkthroughStage = {
+  id: string;
+  title: string;
+  body: string;
+  /** Marks a claim the spec sheet cannot back yet. Printed on the caption. */
+  unconfirmed?: true;
+};
+
+/**
+ * The scroll-scrubbed tour of the body, read top to bottom. Every stage states
+ * only what HARDWARE.specs already backs; the one claim that outruns the spec
+ * sheet is flagged rather than written as fact.
+ */
+export const WALKTHROUGH = {
+  /**
+   * The push-in from full body to base. Unset until it is shot: with no src the
+   * section renders its stages as a plain list, so it is honest either way.
+   */
+  clip: {
+    src: undefined as string | undefined,
+    poster: undefined as string | undefined,
+    label: "Nori A3, full body down to the base",
+  },
+  /** Stands in for the clip while it is missing. */
+  fallback: {
+    slot: "Full body push-in",
+    note: "One take, head to base.",
+    tone: "ink",
+    ratio: "4 / 5",
+    video: true,
+  } satisfies MediaSlot,
+  stages: [
+    {
+      id: "head",
+      title: "The face",
+      body:
+        "The head screen is a status display, not decoration: the four states above " +
+        "are what it shows. Panel type and size are not published yet. Cameras sit on " +
+        "the head and the neck.",
+      unconfirmed: true,
+    },
+    {
+      id: "torso",
+      title: "The torso",
+      body:
+        "Battery and compute ride in the body, good for six to eight hours between " +
+        "charges, with the speaker and microphone that take spoken commands.",
+    },
+    {
+      id: "arm",
+      title: "The arms",
+      body:
+        "Two of them, 7+1 degrees of freedom each and 1.5kg of payload per arm. A 720p " +
+        "camera on each gripper watches the hand's own work.",
+    },
+    {
+      id: "base",
+      title: "The base",
+      body:
+        "A 12m lidar scans at 8-12Hz, resolving 0.72 degrees at 10Hz, so the robot has " +
+        "the shape of the room before it moves through it.",
+    },
+  ] satisfies WalkthroughStage[],
 } as const;
 
 export const TEACH_IT = {

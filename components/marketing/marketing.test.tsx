@@ -18,6 +18,7 @@ import {
   SUPPORTING_DETAILS,
   TEACH_IT,
   THE_FACE,
+  WALKTHROUGH,
   WHAT_IT_IS,
   type MediaSlot,
 } from "@/lib/landing-content";
@@ -108,13 +109,23 @@ describe("TheFace", () => {
 });
 
 describe("Hardware", () => {
-  it("renders every mosaic card title and caption", () => {
+  // The server render is the walkthrough's list mode, so every stage has to be
+  // in the markup: that is what a crawler, a no-JS reader and a failed
+  // hydration all get instead of three captions stuck at opacity 0.
+  it("renders the headline and every walkthrough stage", () => {
     const body = text(<Hardware />);
     expect(body).toContain(HARDWARE.headline);
-    for (const { title, caption } of HARDWARE.cards) {
+    for (const { title, body: copy } of WALKTHROUGH.stages) {
       expect(body).toContain(title);
-      expect(body).toContain(caption);
+      expect(body).toContain(copy);
     }
+  });
+
+  it("marks the unbacked claim once, and pins the clip nowhere until it exists", () => {
+    const body = text(<Hardware />);
+    expect(body.match(/unconfirmed/g)).toHaveLength(1);
+    // No footage yet: the stage shows the placeholder, not an empty video.
+    expect(markup(<Hardware />)).toContain(`aria-label="Placeholder: ${WALKTHROUGH.fallback.slot}"`);
   });
 
   it("renders every spec label and value", () => {
@@ -221,7 +232,7 @@ const ALL_SLOTS: MediaSlot[] = [
   HERO.media,
   WHAT_IT_IS.hero,
   ...WHAT_IT_IS.pair,
-  ...HARDWARE.cards.map((c) => c.media),
+  WALKTHROUGH.fallback,
   TEACH_IT.media,
   CLOSING.media,
 ];
