@@ -25,11 +25,15 @@ import {
   browCenterY,
   buildBrowPath,
   buildEyePath,
+  buildMouthPath,
   eyeRenderMode,
   isDirectional,
+  mouthCenterY,
+  mouthRenderMode,
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
+  type NoriMouthParams,
 } from "@/lib/nori-face";
 import CustomSvgEye from "./CustomSvgEye";
 
@@ -342,6 +346,36 @@ function LiveBrow({
   );
 }
 
+function LiveMouth({
+  mouth,
+  color,
+  morph,
+}: {
+  mouth: NoriMouthParams;
+  color: string;
+  morph: Morph;
+}) {
+  const stroke = mouthRenderMode(mouth.shape) === "stroke";
+  return (
+    <motion.g
+      style={{ transformBox: "fill-box", transformOrigin: "center" }}
+      initial={false}
+      animate={{ y: mouthCenterY(mouth) - CY }}
+      transition={morph}
+    >
+      <path
+        d={buildMouthPath(mouth)}
+        transform={`translate(${CX} ${CY})`}
+        fill={stroke ? "none" : color}
+        stroke={stroke ? color : undefined}
+        strokeWidth={stroke ? mouth.thickness : undefined}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </motion.g>
+  );
+}
+
 export default function NoriFaceLive({
   face,
   className,
@@ -369,7 +403,7 @@ export default function NoriFaceLive({
     [durationMs, ease, s.stiffness, s.damping, s.mass],
   );
 
-  const { color, glow, gap, left, right, browsEnabled, leftBrow, rightBrow } =
+  const { color, glow, gap, left, right, browsEnabled, leftBrow, rightBrow, mouthEnabled, mouth } =
     face;
   const glowFilter =
     glow > 0
@@ -411,6 +445,7 @@ export default function NoriFaceLive({
               />
             </>
           )}
+          {mouthEnabled && <LiveMouth mouth={mouth} color={color} morph={morph} />}
         </motion.g>
       </g>
     </svg>

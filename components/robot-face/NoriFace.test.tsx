@@ -106,4 +106,15 @@ describe("NoriFace invariants", () => {
     expect(markup).toContain("scale(1 1)");
     expect(markup).toContain("scale(-1 1)");
   });
+
+  it("draws no mouth when the mouth is disabled", () => {
+    // Neutral face: bar eyes (<rect>), brows and mouth off — so no <path> at all.
+    const markup = renderToStaticMarkup(<NoriFace face={face({ mouthEnabled: false })} />);
+    expect(markup.match(/<path/g) ?? []).toHaveLength(0);
+  });
+
+  it("draws one mouth path when the mouth is enabled", () => {
+    const markup = renderToStaticMarkup(<NoriFace face={face({ mouthEnabled: true })} />);
+    expect(markup.match(/<path/g) ?? []).toHaveLength(1);
+  });
 });
