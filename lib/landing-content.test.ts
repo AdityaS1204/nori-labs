@@ -143,7 +143,7 @@ describe("landing content", () => {
       THE_FACE.cta,
       TEACH_IT.cta,
       CLOSING.cta,
-      ...FOOTER.links,
+      ...FOOTER.columns.flatMap((c): readonly { href: string }[] => c.links),
     ];
     const all = [...links, ...NAV_LINKS.flatMap((n) => n.items)];
     for (const { href } of all) {

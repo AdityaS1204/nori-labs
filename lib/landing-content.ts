@@ -372,11 +372,40 @@ export const CLOSING = {
 
 export const FOOTER = {
   note: "Design study for the A3 page. All copy is draft; footage slots are marked.",
-  links: [
-    { href: "/library", label: "Library" },
-    { href: "/lab", label: "Nori Lab" },
-    { href: "#hardware", label: "Specs" },
+  tagline: "The home robot you teach by showing.",
+  // Columns point only at real anchors and routes — no placeholder legal pages,
+  // since every footer href is checked against the sections that exist.
+  columns: [
+    {
+      title: "The robot",
+      links: [
+        { href: "#what-it-is", label: "What it is" },
+        { href: "#teach-it", label: "Teach it" },
+        { href: "#the-face", label: "The face" },
+        { href: "#hardware", label: "Hardware" },
+      ],
+    },
+    {
+      title: "Platform",
+      links: [
+        { href: "/lab", label: "Nori Lab" },
+        { href: "/library", label: "Expression library" },
+        { href: "/login", label: "Sign in" },
+      ],
+    },
+    {
+      title: "Get one",
+      links: [
+        { href: "#order", label: "Price" },
+        { href: "/preorder", label: "Preorder" },
+      ],
+    },
   ],
+  newsletter: {
+    title: "Get launch updates",
+    placeholder: "Email address",
+    cta: "Subscribe",
+  },
   socials: [
     { href: "https://x.com/NoriRobotics", label: "X" },
     { href: "https://discord.gg/NgKhhxQny7", label: "Discord" },
