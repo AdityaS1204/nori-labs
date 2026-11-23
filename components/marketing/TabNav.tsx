@@ -78,8 +78,8 @@ export default function TabNav() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // Scroll down reveals the bar, scroll up tucks it away. It starts shown so the
-  // server markup is never hidden; the first upward scroll is what hides it.
+  // Scroll down tucks the bar away, scroll up slides it back in. It starts shown
+  // so the server markup is never hidden; the first downward scroll hides it.
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
   const { scrollY } = useScroll();
@@ -93,7 +93,7 @@ export default function TabNav() {
       return;
     }
     if (Math.abs(delta) < 6) return; // ignore scroll jitter
-    setHidden(delta < 0);
+    setHidden(delta > 0);
   });
 
   // Critically damped (damping = 2*sqrt(stiffness*mass)), so the highlight
