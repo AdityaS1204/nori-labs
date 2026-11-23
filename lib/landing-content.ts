@@ -356,7 +356,7 @@ export const TEACH_IT = {
 } as const;
 
 export const CLOSING = {
-  headline: ["Full price,", "no deposit."],
+  headline: ["One robot, yours to teach.", "Full price, no deposit."],
   price: "$1,688",
   body: "Reserve a NORI A3 at the launch price. Ships Fall 2026, assembled in San Francisco.",
   cta: { label: "Order an A3", href: "/preorder" },
