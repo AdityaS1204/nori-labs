@@ -62,9 +62,6 @@ export default function LabNav() {
         </Link>
         <span className="text-white/20 text-[13px]">/</span>
         <span className="text-[13px] font-medium text-white/90 tracking-[0.02em]">Expression Lab</span>
-        <span className="ml-1 px-2 py-0.5 text-[10px] font-semibold tracking-[0.08em] uppercase bg-[#E8BE3C]/15 text-[#E8BE3C] rounded-full border border-[#E8BE3C]/20">
-          Beta
-        </span>
       </div>
 
       {/* Right: actions. Saving lives in the editor's own toolbar. */}
