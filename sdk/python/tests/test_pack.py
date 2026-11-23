@@ -77,6 +77,23 @@ class TestDefaults:
         assert pack.states[0].face["left"]["shape"] == "bar"
         assert pack.states[0].face["left"]["thickness"] == 16
 
+    def test_backfills_the_mouth_written_before_it_existed(self):
+        data = minimal()
+        face = data["states"][0]["face"]
+        face.pop("mouth", None)
+        face.pop("mouthEnabled", None)
+        out = parse_pack(data).states[0].face
+        assert out["mouthEnabled"] is False
+        assert out["mouth"] == {
+            "width": 120,
+            "height": 10,
+            "radius": 5,
+            "curve": 0,
+            "thickness": 10,
+            "offsetY": 0,
+            "shape": "line",
+        }
+
 
 class TestRejections:
     def test_unknown_schema(self):

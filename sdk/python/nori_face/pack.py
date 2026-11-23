@@ -29,6 +29,18 @@ DEFAULT_TWEEN_EASE = "easeInOut"
 _HEX6 = re.compile(r"^#[0-9a-fA-F]{6}$")
 _HEX3 = re.compile(r"^#[0-9a-fA-F]{3}$")
 
+# Mirrors NEUTRAL_MOUTH in lib/nori-face.ts: a flat, centred line in the lower
+# third. Backfilled onto faces written before the mouth existed.
+NEUTRAL_MOUTH = {
+    "width": 120,
+    "height": 10,
+    "radius": 5,
+    "curve": 0,
+    "thickness": 10,
+    "offsetY": 0,
+    "shape": "line",
+}
+
 
 class FacePackError(ValueError):
     """Raised when a pack is malformed. Deliberately fatal: a bad pack should
@@ -279,6 +291,10 @@ def parse_pack(data: Any) -> FacePack:
             face[part] = dict(
                 _record(face.get(part), "states[{}].face.{}".format(i, part))
             )
+        # The mouth is additive: backfill it when a pre-mouth pack omits it.
+        face["mouthEnabled"] = bool(face.get("mouthEnabled", False))
+        if face.get("mouth") is None:
+            face["mouth"] = dict(NEUTRAL_MOUTH)
         face["color"] = normalize_hex(
             face.get("color"), "states[{}].face.color".format(i)
         )
