@@ -390,6 +390,7 @@ export const FOOTER = {
       links: [
         { href: "/lab", label: "Nori Lab" },
         { href: "/library", label: "Expression library" },
+        { href: "/docs", label: "Docs" },
         { href: "/login", label: "Sign in" },
       ],
     },

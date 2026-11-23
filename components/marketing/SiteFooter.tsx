@@ -21,8 +21,19 @@ const SOCIAL_ICON: Record<string, typeof NewTwitterIcon> = {
 
 export default function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/[0.07] bg-ink">
-      <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+    <footer className="relative overflow-hidden bg-ink">
+      {/* Light cast from above: a soft white glow masked to the top edge, so the
+          footer blends up into the dark section rather than meeting it on a line. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72"
+        style={{
+          background:
+            "radial-gradient(130% 115% at 50% -16%, rgba(255,255,255,0.26), rgba(255,255,255,0.08) 34%, transparent 60%)",
+        }}
+      />
+
+      <div className="relative z-10 mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
         <div className="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)_1.6fr]">
           {/* Brand: small logo, tagline, social chips */}
           <div className="flex flex-col gap-5">
@@ -88,12 +99,12 @@ export default function SiteFooter() {
         </p>
       </div>
 
-      {/* Oversized brand mark, bled off the bottom edge as a watermark. */}
+      {/* Oversized brand mark, centred and bled off the bottom edge. */}
       <Link
         href="/"
         aria-hidden="true"
         tabIndex={-1}
-        className="pointer-events-none flex items-center gap-[0.12em] px-5 text-[clamp(96px,26vw,260px)] leading-[0.8] text-white/90 sm:px-8"
+        className="pointer-events-none relative z-10 flex w-full items-center justify-center gap-[0.12em] text-[clamp(96px,26vw,260px)] leading-[0.8] text-white/90"
         style={{ marginBottom: "-0.18em" }}
       >
         <NoriMark className="h-[0.82em] w-[0.82em]" />
