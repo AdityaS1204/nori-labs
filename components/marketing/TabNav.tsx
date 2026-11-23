@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+} from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowUpRight01Icon, Cancel01Icon, Menu01Icon } from "@hugeicons/core-free-icons";
 
@@ -72,6 +78,24 @@ export default function TabNav() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
+  // Scroll down reveals the bar, scroll up tucks it away. It starts shown so the
+  // server markup is never hidden; the first upward scroll is what hides it.
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (y) => {
+    const delta = y - lastY.current;
+    lastY.current = y;
+    // An open menu stays put: hiding it mid-interaction would be jarring.
+    if (openIdx !== null || mobileOpen) {
+      setHidden(false);
+      return;
+    }
+    if (Math.abs(delta) < 6) return; // ignore scroll jitter
+    setHidden(delta < 0);
+  });
+
   // Critically damped (damping = 2*sqrt(stiffness*mass)), so the highlight
   // settles on the new tab without the overshoot that reads as a wobble.
   const spring = reduced
@@ -83,7 +107,12 @@ export default function TabNav() {
   const preview = active ? (active.items[hoveredChild]?.media ?? active.media) : undefined;
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
+    <motion.header
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4"
+      initial={false}
+      animate={{ y: hidden ? "-130%" : "0%", opacity: hidden ? 0 : 1 }}
+      transition={reduced ? { duration: 0 } : { duration: 0.32, ease: EASE }}
+    >
       <div
         className="pointer-events-auto w-full max-w-[640px] overflow-hidden rounded-[20px] border border-white/[0.07] backdrop-blur-md"
         style={{ backgroundColor: SHELL }}
@@ -271,6 +300,6 @@ export default function TabNav() {
           ) : null}
         </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   );
 }
