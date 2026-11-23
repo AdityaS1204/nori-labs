@@ -24,10 +24,17 @@ function snap(value: number, step: number, min: number) {
   return Number(snapped.toFixed(6));
 }
 
+// Even spacing (px) of the decorative ruler ticks across the track.
+const TICK_GAP = 16;
+const faintTicks = `repeating-linear-gradient(to right, rgba(255,255,255,0.14) 0 1px, transparent 1px ${TICK_GAP}px)`;
+const brightTicks = `repeating-linear-gradient(to right, rgba(255,255,255,0.4) 0 1px, transparent 1px ${TICK_GAP}px)`;
+
 /**
- * DialKit-style slider: the whole row IS the track. A lighter fill grows from
- * the left to show the value; label and value sit on top. Drag anywhere on the
- * row, or focus it and use the arrow keys. `role="slider"`.
+ * DialKit-style ruler slider: label on the left, a tick ruler across the
+ * middle with a bold amber handle at the value, and the readout on the right.
+ * Ticks left of the handle brighten to read as "filled". Drag anywhere on the
+ * row (pointer maps to the ruler track) or focus it and use the arrow keys.
+ * `role="slider"`.
  */
 export default function NumberSlider({
   label,
@@ -39,12 +46,12 @@ export default function NumberSlider({
   format,
   unit,
 }: NumberSliderProps) {
-  const rowRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const pct = ((clamp(value, min, max) - min) / (max - min)) * 100;
 
   const setFromClientX = (clientX: number) => {
-    const el = rowRef.current;
+    const el = trackRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
@@ -85,7 +92,6 @@ export default function NumberSlider({
 
   return (
     <div
-      ref={rowRef}
       role="slider"
       tabIndex={0}
       aria-label={label}
@@ -98,19 +104,35 @@ export default function NumberSlider({
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onKeyDown={onKeyDown}
-      className={`${ROW_BASE} w-full cursor-ew-resize touch-none select-none overflow-hidden transition-colors hover:bg-[#2a2a2e] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E8BE3C]/50`}
+      className={`${ROW_BASE} flex w-full cursor-ew-resize touch-none select-none items-center gap-3 overflow-hidden px-3.5 transition-colors hover:bg-[#2a2a2e] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#E8BE3C]/50`}
     >
-      {/* value fill */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-y-0 left-0 bg-white/[0.11]"
-        style={{ width: `${pct}%` }}
-      />
-      {/* label + value */}
-      <div className="relative flex h-full items-center justify-between px-3.5">
-        <span className="text-[13px] text-white/80">{label}</span>
-        <span className="text-[13px] tabular-nums text-white/95">{readout}</span>
+      <span className="flex-shrink-0 text-[13px] text-white/80">{label}</span>
+
+      {/* ── Ruler track ── */}
+      <div ref={trackRef} className="relative h-full min-w-0 flex-1">
+        {/* faint ticks across the full track */}
+        <div
+          aria-hidden="true"
+          className="absolute left-0 right-0 top-1/2 h-[11px] -translate-y-1/2"
+          style={{ backgroundImage: faintTicks }}
+        />
+        {/* brighter ticks up to the handle (the "filled" portion) */}
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-1/2 h-[11px] -translate-y-1/2 overflow-hidden"
+          style={{ width: `${pct}%`, backgroundImage: brightTicks }}
+        />
+        {/* handle */}
+        <div
+          aria-hidden="true"
+          className="absolute top-1/2 h-[18px] w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E8BE3C]"
+          style={{ left: `${pct}%` }}
+        />
       </div>
+
+      <span className="flex-shrink-0 text-[13px] tabular-nums text-white/95">
+        {readout}
+      </span>
     </div>
   );
 }
