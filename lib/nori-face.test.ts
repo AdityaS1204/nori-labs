@@ -3,10 +3,15 @@ import { describe, expect, it } from "vitest";
 import {
   FACE_VIEWBOX,
   NEUTRAL_FACE,
+  NEUTRAL_MOUTH,
   browCenterY,
+  buildBrowPath,
   buildEyePath,
+  buildMouthPath,
   eyeRenderMode,
   isDirectional,
+  mouthCenterY,
+  mouthRenderMode,
 } from "@/lib/nori-face";
 
 describe("NEUTRAL_FACE", () => {
@@ -39,6 +44,42 @@ describe("browCenterY", () => {
     const eye = { offsetY: -60, height: 210 };
     const brow = { length: 56, thickness: 10, radius: 5, arc: 30, tilt: 0, offsetY: 80 };
     expect(browCenterY(eye, brow)).toBe(10 / 2 + 30 + 14);
+  });
+});
+
+describe("mouth model", () => {
+  it("ships a neutral face with the mouth off but present", () => {
+    expect(NEUTRAL_FACE.mouthEnabled).toBe(false);
+    expect(NEUTRAL_FACE.mouth.shape).toBe("line");
+  });
+
+  it("keeps the neutral mouth inside the viewBox", () => {
+    const y = mouthCenterY(NEUTRAL_FACE.mouth);
+    expect(y).toBeGreaterThan(FACE_VIEWBOX.height / 2);
+    expect(y + NEUTRAL_MOUTH.height / 2).toBeLessThan(FACE_VIEWBOX.height);
+  });
+
+  it("builds distinct line paths for flat, smile and frown", () => {
+    const flat = buildMouthPath({ shape: "line", width: 120, height: 10, radius: 5, curve: 0 });
+    const smile = buildMouthPath({ shape: "line", width: 120, height: 10, radius: 5, curve: 20 });
+    const frown = buildMouthPath({ shape: "line", width: 120, height: 10, radius: 5, curve: -20 });
+    expect(smile).not.toBe(flat);
+    expect(frown).not.toBe(flat);
+    expect(smile).not.toBe(frown);
+  });
+
+  it("a positive-curve line bows its middle below its ends (a smile ◡)", () => {
+    // buildBrowPath's +arc bows up; the mouth negates curve so +curve bows down.
+    const smile = buildMouthPath({ shape: "line", width: 120, height: 10, radius: 5, curve: 20 });
+    const bowedUp = buildBrowPath({ length: 120, thickness: 10, radius: 5, arc: 20 });
+    expect(smile).not.toBe(bowedUp);
+    expect(smile).toBe(buildBrowPath({ length: 120, thickness: 10, radius: 5, arc: -20 }));
+  });
+
+  it("renders line/oval as fill and arc as stroke", () => {
+    expect(mouthRenderMode("line")).toBe("fill");
+    expect(mouthRenderMode("oval")).toBe("fill");
+    expect(mouthRenderMode("arc")).toBe("stroke");
   });
 });
 

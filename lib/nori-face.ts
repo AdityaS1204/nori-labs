@@ -54,6 +54,25 @@ export interface NoriBrowParams {
   offsetY: number;
 }
 
+/** The mouth's silhouette. `line` is a bowed rounded bar (the default). */
+export type MouthShape = "line" | "arc" | "oval";
+
+export interface NoriMouthParams {
+  /** Mouth length. */
+  width: number;
+  /** Body height of `line` (tall = block, small = line); opening of `oval`. */
+  height: number;
+  /** Corner radius of the bar ends (`line`). */
+  radius: number;
+  /** + = smile (bows the middle down), − = frown, 0 = flat. */
+  curve: number;
+  /** Stroke weight — `arc` only (like the eye's weight). */
+  thickness: number;
+  /** Vertical position in the lower face. */
+  offsetY: number;
+  shape: MouthShape;
+}
+
 export interface NoriFaceParams {
   /** Eye colour (the glowing fill). */
   color: string;
@@ -67,6 +86,9 @@ export interface NoriFaceParams {
   browsEnabled: boolean;
   leftBrow: NoriBrowParams;
   rightBrow: NoriBrowParams;
+  /** Whether the mouth is drawn (off on the robot's neutral face). */
+  mouthEnabled: boolean;
+  mouth: NoriMouthParams;
 }
 
 /** The face coordinate space. Landscape, with headroom above the eyes for
@@ -98,6 +120,17 @@ const NEUTRAL_BROW: NoriBrowParams = {
   offsetY: 22,
 };
 
+/** A flat, centred thin line in the lower third — the resting mouth. */
+export const NEUTRAL_MOUTH: NoriMouthParams = {
+  width: 120,
+  height: 10,
+  radius: 5,
+  curve: 0,
+  thickness: 10,
+  offsetY: 0,
+  shape: "line",
+};
+
 /**
  * The robot's default resting face — the neutral expression shipped on Nori.
  * Two upright glowing rectangles, set wide apart around centre. Eyebrows are
@@ -112,6 +145,8 @@ export const NEUTRAL_FACE: NoriFaceParams = {
   browsEnabled: false,
   leftBrow: { ...NEUTRAL_BROW },
   rightBrow: { ...NEUTRAL_BROW },
+  mouthEnabled: false,
+  mouth: { ...NEUTRAL_MOUTH },
 };
 
 /**
@@ -223,5 +258,60 @@ export function buildEyePath(
       // Fallback centred rectangle (bar normally uses <rect>).
       return `M ${n(-hw)} ${n(-hh)} H ${n(hw)} V ${n(hh)} H ${n(-hw)} Z`;
   }
+}
+
+export interface MouthShapeDef {
+  id: MouthShape;
+  label: string;
+  mode: "fill" | "stroke";
+  /** A 24×24 glyph `d` for the shape-picker button. */
+  glyph: string;
+}
+
+/** The curated mouth shapes offered in the picker. */
+export const MOUTH_SHAPES: MouthShapeDef[] = [
+  { id: "line", label: "Line", mode: "fill", glyph: "M5 11 h14 a1 1 0 0 1 0 2 h-14 a1 1 0 0 1 0 -2 Z" },
+  { id: "arc", label: "Arc", mode: "stroke", glyph: "M5 9 Q12 18 19 9" },
+  { id: "oval", label: "Oval", mode: "fill", glyph: "M4 12 a8 5 0 1 0 16 0 a8 5 0 1 0 -16 0 Z" },
+];
+
+export const mouthRenderMode = (shape: MouthShape | undefined): "fill" | "stroke" =>
+  (MOUTH_SHAPES.find((s) => s.id === shape) ?? MOUTH_SHAPES[0]).mode;
+
+/**
+ * Build the SVG path for the mouth, centred on the origin (sized/stroked by the
+ * renderer). `line` reuses the eyebrow's bowed-bar construction; the curve is
+ * negated because buildBrowPath's +arc bows up, while a +curve mouth smiles
+ * (bows its middle down). `arc` is an open stroke; `oval` is an ellipse.
+ */
+export function buildMouthPath(
+  mouth: Pick<NoriMouthParams, "shape" | "width" | "height" | "radius" | "curve">,
+): string {
+  const n = (v: number) => Number(v.toFixed(2));
+  const hw = mouth.width / 2;
+  const hh = mouth.height / 2;
+
+  switch (mouth.shape) {
+    case "arc":
+      return `M ${n(-hw)} 0 Q 0 ${n(mouth.curve)} ${n(hw)} 0`;
+    case "oval":
+      return `M ${n(-hw)} 0 a ${n(hw)} ${n(hh)} 0 1 0 ${n(2 * hw)} 0 a ${n(hw)} ${n(hh)} 0 1 0 ${n(-2 * hw)} 0 Z`;
+    default:
+      return buildBrowPath({
+        length: mouth.width,
+        thickness: mouth.height,
+        radius: mouth.radius,
+        arc: -mouth.curve,
+      });
+  }
+}
+
+/**
+ * Vertical centre of the mouth: a baseline in the lower third, shifted by
+ * `offsetY` and clamped so the body stays inside the viewBox.
+ */
+export function mouthCenterY(mouth: Pick<NoriMouthParams, "offsetY" | "height">): number {
+  const raw = FACE_VIEWBOX.height / 2 + 80 + mouth.offsetY;
+  return Math.min(FACE_VIEWBOX.height - mouth.height / 2 - 14, raw);
 }
 
