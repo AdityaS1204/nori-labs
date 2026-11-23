@@ -163,12 +163,12 @@ export default function BodyWalkthrough() {
 
   return (
     <div ref={track} className="relative mt-10" style={{ height: `${STAGES.length * 100}svh` }}>
-      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-6 overflow-hidden px-5 py-12">
+      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-4 overflow-hidden px-4 py-6">
         <video
           ref={video}
           src={CLIP.src}
           poster={CLIP.poster}
-          className="max-h-[64svh] w-auto max-w-full object-contain"
+          className="max-h-[76svh] w-auto max-w-full object-contain"
           style={FEATHER_STYLE}
           aria-hidden="true"
           tabIndex={-1}
