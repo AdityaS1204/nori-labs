@@ -13,6 +13,7 @@ import {
   FOOTER,
   HARDWARE,
   HERO,
+  MARK,
   SUPPORTING_DETAILS,
   TEACH_IT,
   THE_FACE,
@@ -183,6 +184,14 @@ describe("SiteFooter", () => {
 
   it("renders the draft note", () => {
     expect(text(<SiteFooter />)).toContain(FOOTER.note);
+  });
+
+  it("locks the home link up as the mark beside the wordmark", () => {
+    const home = html.slice(html.indexOf('aria-label="Nori Robotics home"'));
+    const link = home.slice(0, home.indexOf("</a>"));
+    expect(link).toContain(`src="${MARK.src}"`);
+    expect(link).toContain("font-display");
+    expect(link).toContain("nori");
   });
 });
 
