@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { rowToPreset, type PresetRow } from "@/lib/preset-row";
+import { normalizeStates, rowToPreset, type PresetRow } from "@/lib/preset-row";
 import { DEFAULT_RENDER } from "@/lib/render-target";
-import { NEUTRAL_FACE } from "@/lib/nori-face";
+import { NEUTRAL_FACE, NEUTRAL_MOUTH, type NoriFaceParams } from "@/lib/nori-face";
+import { cloneFace } from "@/lib/presets";
 
 function row(overrides: Partial<PresetRow> = {}): PresetRow {
   return {
@@ -41,5 +42,24 @@ describe("rowToPreset render config", () => {
       row({ render: { target: "metal" } as unknown as PresetRow["render"] }),
     );
     expect(preset.render.target).toBe("web");
+  });
+});
+
+describe("normalizeStates mouth backfill", () => {
+  it("backfills the mouth on a face written before it existed", () => {
+    const face = { ...NEUTRAL_FACE } as Record<string, unknown>;
+    delete face.mouth;
+    delete face.mouthEnabled;
+    const [out] = normalizeStates([
+      { id: "s1", label: "X", face: face as unknown as NoriFaceParams },
+    ]);
+    expect(out.face.mouthEnabled).toBe(false);
+    expect(out.face.mouth).toEqual(NEUTRAL_MOUTH);
+  });
+
+  it("cloneFace does not alias the mouth between states", () => {
+    const a = cloneFace(NEUTRAL_FACE);
+    a.mouth.curve = 30;
+    expect(NEUTRAL_FACE.mouth.curve).toBe(0);
   });
 });

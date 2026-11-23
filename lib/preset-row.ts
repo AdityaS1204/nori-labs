@@ -6,7 +6,7 @@
  */
 
 import type { Author, ExpressionState, Preset } from "@/lib/presets";
-import type { NoriEyeParams } from "@/lib/nori-face";
+import { NEUTRAL_MOUTH, type NoriEyeParams } from "@/lib/nori-face";
 import { normalizeRender, type RenderConfig } from "@/lib/render-target";
 
 /** Shape of a row in the `presets` table. */
@@ -63,6 +63,8 @@ export function normalizeStates(states: ExpressionState[]): ExpressionState[] {
       ...s.face,
       left: normalizeEye(s.face.left),
       right: normalizeEye(s.face.right),
+      mouthEnabled: s.face.mouthEnabled ?? false,
+      mouth: s.face.mouth ?? { ...NEUTRAL_MOUTH },
     },
   }));
 }

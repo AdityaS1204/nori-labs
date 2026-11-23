@@ -81,6 +81,7 @@ export function cloneFace(f: NoriFaceParams): NoriFaceParams {
     right: { ...f.right },
     leftBrow: { ...f.leftBrow },
     rightBrow: { ...f.rightBrow },
+    mouth: { ...f.mouth },
   };
 }
 
