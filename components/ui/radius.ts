@@ -8,4 +8,6 @@ export const RADIUS = {
   control: 12,
   /** Media cards, mosaic tiles, spec grids. */
   surface: 24,
+  /** The price-section carousel, rounder than a normal surface. */
+  gallery: 32,
 } as const;

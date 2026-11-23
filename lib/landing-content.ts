@@ -360,11 +360,14 @@ export const CLOSING = {
   price: "$1,688",
   body: "Reserve a NORI A3 at the launch price. Ships Fall 2026, assembled in San Francisco.",
   cta: { label: "Order an A3", href: "/preorder" },
-  media: {
-    slot: "Image slot 10 — full robot, three-quarter",
-    tone: "sage",
-    ratio: "3 / 4",
-  } satisfies MediaSlot,
+  // Shot from several angles. `slot` is the caption and alt until a photo lands;
+  // one shared ratio keeps every slide the same height so paging never jumps.
+  gallery: [
+    { slot: "Front", tone: "sage", ratio: "4 / 5" },
+    { slot: "Three-quarter", tone: "ink", ratio: "4 / 5" },
+    { slot: "Side", tone: "haze", ratio: "4 / 5" },
+    { slot: "Back", tone: "sage", ratio: "4 / 5" },
+  ] satisfies MediaSlot[],
 } as const;
 
 export const FOOTER = {
