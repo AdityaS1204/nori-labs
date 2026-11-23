@@ -167,8 +167,9 @@ describe("Closing", () => {
     // Each slide is reachable: the dots label every angle even though only the
     // first renders server-side.
     for (const { slot } of CLOSING.gallery) expect(html).toContain(`aria-label="${slot}"`);
-    expect(html).toContain('aria-label="Previous angle"');
-    expect(html).toContain('aria-label="Next angle"');
+    // The dots live in a glass page-control pill floated over the image.
+    expect(html).toContain('aria-label="Choose an angle"');
+    expect(html).toContain("backdrop-blur-md");
     expect(html).toContain('aria-roledescription="carousel"');
   });
 });

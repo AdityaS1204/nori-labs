@@ -2,8 +2,6 @@
 
 import { useCallback, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
 import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
@@ -29,7 +27,8 @@ type Props = { slides: readonly MediaSlot[] };
 /**
  * The price-section carousel. Works over skeletons today: a slide with no `src`
  * shows a toned placeholder, and dropping a `src` on it swaps in the photo with
- * no other change.
+ * no other change. The page control is a frosted-glass pill floated over the
+ * image itself; the dots page the carousel and arrow keys do when one has focus.
  *
  * SSR renders the first slide at full opacity — the enter/exit motion is
  * client-only, so no slide ships hidden (the rule Reveal documents). Direction
@@ -55,7 +54,7 @@ export default function OrderGallery({ slides }: Props) {
       role="group"
       aria-roledescription="carousel"
       aria-label="Nori A3 from different angles"
-      className="flex w-full max-w-[460px] flex-col gap-4"
+      className="w-full max-w-[460px]"
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") paginate(-1);
         else if (e.key === "ArrowRight") paginate(1);
@@ -98,58 +97,35 @@ export default function OrderGallery({ slides }: Props) {
               )}
             </motion.div>
           </AnimatePresence>
+
+          {/* Frosted-glass page control, floated over the image's bottom edge. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
+            <div
+              role="tablist"
+              aria-label="Choose an angle"
+              className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-2 shadow-lg shadow-black/20 backdrop-blur-md"
+            >
+              {slides.map((s, i) => (
+                <button
+                  key={s.slot}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === active}
+                  aria-label={s.slot}
+                  onClick={() => goTo(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === active ? "w-5 bg-lime" : "w-1.5 bg-white/55 hover:bg-white/85"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </Squircle>
-
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          <Control label="Previous angle" icon={ArrowLeft01Icon} onClick={() => paginate(-1)} />
-          <Control label="Next angle" icon={ArrowRight01Icon} onClick={() => paginate(1)} />
-        </div>
-
-        <div className="flex items-center gap-1.5" role="tablist" aria-label="Choose an angle">
-          {slides.map((s, i) => (
-            <button
-              key={s.slot}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              aria-label={s.slot}
-              onClick={() => goTo(i)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === active ? "w-5 bg-lime" : "w-1.5 bg-white/25 hover:bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
 
       <p id={labelId} aria-live="polite" className="sr-only">
         {slide.slot} — {active + 1} of {count}
       </p>
     </div>
-  );
-}
-
-function Control({
-  label,
-  icon,
-  onClick,
-}: {
-  label: string;
-  icon: typeof ArrowLeft01Icon;
-  onClick: () => void;
-}) {
-  return (
-    <Squircle cornerRadius={RADIUS.control}>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={onClick}
-        className="flex h-9 w-9 items-center justify-center border border-white/15 bg-white/[0.04] text-white/80 transition-colors duration-150 hover:border-white/30 hover:bg-white/[0.08] hover:text-white"
-      >
-        <HugeiconsIcon icon={icon} size={17} color="currentColor" />
-      </button>
-    </Squircle>
   );
 }
