@@ -23,6 +23,9 @@ function markup(render: RenderConfig, face: NoriFaceParams = NEUTRAL_FACE): stri
       onEyeCustomSvgChange={() => {}}
       onToggleBrows={() => {}}
       onBrowChange={() => {}}
+      onToggleMouth={() => {}}
+      onMouthChange={() => {}}
+      onMouthShapeChange={() => {}}
       gazeEnabled={false}
       gazeMode="cursor"
       onToggleGaze={() => {}}
@@ -79,5 +82,32 @@ describe("FaceControls on the LVGL target", () => {
     const face = cloneFace(NEUTRAL_FACE);
     face.left = { ...face.left, shape: "custom", customSvg: "<svg/>" };
     expect(markup(LVGL, face)).toContain("Custom eyes fall back to a bar");
+  });
+});
+
+describe("FaceControls mouth section", () => {
+  it("shows the mouth toggle and hides sliders while off", () => {
+    const html = markup(DEFAULT_RENDER);
+    expect(html).toContain("Show mouth");
+    expect(html).not.toContain('aria-label="Smile"');
+  });
+
+  it("shows the mouth sliders and shape picker when the mouth is on", () => {
+    const face = cloneFace(NEUTRAL_FACE);
+    face.mouthEnabled = true;
+    const html = markup(DEFAULT_RENDER, face);
+    expect(html).toContain('aria-label="Smile"'); // the curve slider
+    expect(html).toContain('aria-label="Line"'); // the shape picker
+  });
+
+  it("shows Weight only for the arc shape", () => {
+    const line = cloneFace(NEUTRAL_FACE);
+    line.mouthEnabled = true;
+    expect(markup(DEFAULT_RENDER, line)).not.toContain('aria-label="Weight"');
+
+    const arc = cloneFace(NEUTRAL_FACE);
+    arc.mouthEnabled = true;
+    arc.mouth = { ...arc.mouth, shape: "arc" };
+    expect(markup(DEFAULT_RENDER, arc)).toContain('aria-label="Weight"');
   });
 });

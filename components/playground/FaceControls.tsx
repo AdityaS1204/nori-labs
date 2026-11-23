@@ -2,22 +2,29 @@
 
 import {
   eyeRenderMode,
+  mouthRenderMode,
+  MOUTH_SHAPES,
   type EyeShape,
+  type MouthShape,
   type NoriBrowParams,
   type EyeShapeDef,
   type NoriEyeParams,
   type NoriFaceParams,
+  type NoriMouthParams,
 } from "@/lib/nori-face";
 import {
   BROW_FIELDS,
   EYE_FIELDS,
   EYE_THICKNESS_FIELD,
+  MOUTH_FIELDS,
+  MOUTH_THICKNESS_FIELD,
   TWEEN_MS_FIELD,
   globalFieldsFor,
   type BrowFieldKey,
   type EyeFieldKey,
   type EyeSide,
   type GlobalFieldKey,
+  type MouthFieldKey,
 } from "./faceFields";
 import {
   EASINGS,
@@ -56,6 +63,9 @@ interface FaceControlsProps {
   ) => void;
   onToggleBrows: (value: boolean) => void;
   onBrowChange: (side: EyeSide, key: BrowFieldKey, value: number) => void;
+  onToggleMouth: (value: boolean) => void;
+  onMouthChange: (key: MouthFieldKey, value: number) => void;
+  onMouthShapeChange: (shape: MouthShape) => void;
   /** Eye-movement preview (not part of the saved face). */
   gazeEnabled: boolean;
   /** Active mode when enabled: "cursor" or "random". */
@@ -118,23 +128,64 @@ function BrowSliders({
   );
 }
 
+/** The mouth's shape picker, sliders, and (for `arc`) its stroke weight. */
+function MouthGroup({
+  mouth,
+  onChange,
+  onShape,
+}: {
+  mouth: NoriMouthParams;
+  onChange: (key: MouthFieldKey, value: number) => void;
+  onShape: (shape: MouthShape) => void;
+}) {
+  const weightShown = mouthRenderMode(mouth.shape) === "stroke";
+  return (
+    <>
+      <ShapePicker shape={mouth.shape} shapes={MOUTH_SHAPES} onPick={onShape} />
+      {MOUTH_FIELDS.map((f) => (
+        <NumberSlider
+          key={f.key}
+          label={f.label}
+          value={mouth[f.key]}
+          min={f.min}
+          max={f.max}
+          step={f.step}
+          unit={f.unit}
+          format={f.format}
+          onChange={(v) => onChange(f.key, v)}
+        />
+      ))}
+      {weightShown && (
+        <NumberSlider
+          label={MOUTH_THICKNESS_FIELD.label}
+          value={mouth.thickness}
+          min={MOUTH_THICKNESS_FIELD.min}
+          max={MOUTH_THICKNESS_FIELD.max}
+          step={MOUTH_THICKNESS_FIELD.step}
+          onChange={(v) => onChange("thickness", v)}
+        />
+      )}
+    </>
+  );
+}
+
 function EyeGroupLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="px-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/30">
+    <span className="px-1 pt-1 text-[11px] font-semibold tracking-[0.1em] text-white/30">
       {children}
     </span>
   );
 }
 
-/** A row of glyph buttons for choosing the eye silhouette. */
-function ShapePicker({
+/** A row of glyph buttons for choosing a silhouette (eye or mouth). */
+function ShapePicker<T extends string>({
   shape,
   shapes,
   onPick,
 }: {
-  shape: EyeShape;
-  shapes: EyeShapeDef[];
-  onPick: (shape: EyeShape) => void;
+  shape: T;
+  shapes: { id: T; label: string; mode: "fill" | "stroke"; glyph: string }[];
+  onPick: (shape: T) => void;
 }) {
   return (
     <div className={`${ROW_BASE} flex items-center gap-1 px-2`}>
@@ -345,6 +396,9 @@ export default function FaceControls({
   onEyeCustomSvgChange,
   onToggleBrows,
   onBrowChange,
+  onToggleMouth,
+  onMouthChange,
+  onMouthShapeChange,
   gazeEnabled,
   gazeMode,
   onToggleGaze,
@@ -442,6 +496,25 @@ export default function FaceControls({
               />
             </>
           ))}
+      </ControlSection>
+
+      <ControlSection title="Mouth">
+        <FieldRow>
+          <span className="text-[13px] text-white/80">Show mouth</span>
+          <Toggle
+            label="Show mouth"
+            checked={face.mouthEnabled}
+            onChange={onToggleMouth}
+          />
+        </FieldRow>
+
+        {face.mouthEnabled && (
+          <MouthGroup
+            mouth={face.mouth}
+            onChange={onMouthChange}
+            onShape={onMouthShapeChange}
+          />
+        )}
       </ControlSection>
 
       {!caps.spring && (

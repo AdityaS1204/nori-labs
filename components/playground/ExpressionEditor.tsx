@@ -6,7 +6,7 @@ import { AnimatePresence } from "motion/react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { RefreshIcon, Copy01Icon, Tick02Icon, FloppyDiskIcon } from "@hugeicons/core-free-icons";
 
-import { type EyeShape, type NoriFaceParams } from "@/lib/nori-face";
+import { type EyeShape, type MouthShape, type NoriFaceParams } from "@/lib/nori-face";
 import {
   clonePreset,
   coverState,
@@ -25,6 +25,7 @@ import type {
   EyeFieldKey,
   EyeSide,
   GlobalFieldKey,
+  MouthFieldKey,
 } from "./faceFields";
 import ControlPanel from "@/components/controls/ControlPanel";
 import FaceControls from "./FaceControls";
@@ -191,6 +192,20 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
         rightBrow:
           side === "left" ? f.rightBrow : { ...f.rightBrow, [key]: value },
       })),
+    [patchFace],
+  );
+
+  const onToggleMouth = useCallback(
+    (value: boolean) => patchFace((f) => ({ ...f, mouthEnabled: value })),
+    [patchFace],
+  );
+  const onMouthChange = useCallback(
+    (key: MouthFieldKey, value: number) =>
+      patchFace((f) => ({ ...f, mouth: { ...f.mouth, [key]: value } })),
+    [patchFace],
+  );
+  const onMouthShapeChange = useCallback(
+    (shape: MouthShape) => patchFace((f) => ({ ...f, mouth: { ...f.mouth, shape } })),
     [patchFace],
   );
 
@@ -392,6 +407,9 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
             onEyeCustomSvgChange={onEyeCustomSvgChange}
             onToggleBrows={onToggleBrows}
             onBrowChange={onBrowChange}
+            onToggleMouth={onToggleMouth}
+            onMouthChange={onMouthChange}
+            onMouthShapeChange={onMouthShapeChange}
             gazeEnabled={gazeMode !== "off"}
             gazeMode={gazeMode === "off" ? lastGaze : gazeMode}
             onToggleGaze={toggleGaze}

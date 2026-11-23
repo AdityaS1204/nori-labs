@@ -2,6 +2,7 @@ import type {
   NoriBrowParams,
   NoriEyeParams,
   NoriFaceParams,
+  NoriMouthParams,
 } from "@/lib/nori-face";
 import { TWEEN_MS_RANGE, capabilities, type RenderTarget } from "@/lib/render-target";
 
@@ -19,6 +20,11 @@ export type BrowFieldKey = keyof Pick<
 >;
 
 export type GlobalFieldKey = keyof Pick<NoriFaceParams, "gap" | "glow">;
+
+export type MouthFieldKey = keyof Pick<
+  NoriMouthParams,
+  "width" | "height" | "radius" | "curve" | "offsetY" | "thickness"
+>;
 
 interface FieldDef<K extends string> {
   key: K;
@@ -60,6 +66,24 @@ export const BROW_FIELDS: FieldDef<BrowFieldKey>[] = [
   { key: "tilt", label: "Tilt", min: -45, max: 45, step: 1, unit: "°" },
   { key: "offsetY", label: "Height above eye", min: 0, max: 80, step: 1 },
 ];
+
+/** Per-mouth editable fields. */
+export const MOUTH_FIELDS: FieldDef<MouthFieldKey>[] = [
+  { key: "width", label: "Width", min: 20, max: 200, step: 1 },
+  { key: "height", label: "Height", min: 2, max: 120, step: 1 },
+  { key: "radius", label: "Corner radius", min: 0, max: 30, step: 0.5 },
+  { key: "curve", label: "Smile", min: -40, max: 40, step: 1 },
+  { key: "offsetY", label: "Vertical offset", min: -60, max: 80, step: 1 },
+];
+
+/** Stroke weight — shown only for the `arc` mouth shape. */
+export const MOUTH_THICKNESS_FIELD: FieldDef<"thickness"> = {
+  key: "thickness",
+  label: "Weight",
+  min: 2,
+  max: 30,
+  step: 1,
+};
 
 /** Screen-wide fields. */
 export const GLOBAL_FIELDS: FieldDef<GlobalFieldKey>[] = [
