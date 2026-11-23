@@ -5,7 +5,6 @@ import {
   FOOTER,
   HARDWARE,
   HERO,
-  LIMITS,
   NAV_CTA,
   NAV_LINKS,
   SUPPORTING_DETAILS,
@@ -68,7 +67,7 @@ describe("landing content", () => {
   // The numbered eyebrows ("01 / what it is") are gone, and with them the
   // renumbering every reorder of the page used to require.
   it("carries no section eyebrow label", () => {
-    for (const section of [HERO, WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, LIMITS, CLOSING]) {
+    for (const section of [HERO, WHAT_IT_IS, TEACH_IT, THE_FACE, HARDWARE, CLOSING]) {
       expect(section).not.toHaveProperty("label");
     }
   });
@@ -124,7 +123,6 @@ describe("landing content", () => {
       "the-face",
       "hardware",
       "teach-it",
-      "limits",
       "order",
     ]);
     const links = [
@@ -212,8 +210,7 @@ describe("landing content", () => {
       THE_FACE,
       HARDWARE,
       TEACH_IT,
-      LIMITS,
-      CLOSING,
+          CLOSING,
     });
     expect(blob).not.toMatch(/lorem|ipsum|TODO|TBD|xxx/i);
   });

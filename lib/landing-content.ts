@@ -355,33 +355,6 @@ export const TEACH_IT = {
   ] satisfies TeachingStep[],
 } as const;
 
-export type Limit = { title: string; body: string };
-
-export const LIMITS = {
-  headline: "What A3 can't do yet.",
-  body:
-    "A robot you teach is a robot that will fail at things. Here is where it stands " +
-    "today, so nothing above this line has to be read as a promise.",
-  items: [
-    {
-      title: "It is not reliable at everything",
-      body: "A taught skill holds up around the setting you taught it in. Move the furniture and you will retrain it.",
-    },
-    {
-      title: "Some tasks still need your hands",
-      body: "Fine manipulation — laces, zips, cracking an egg — is beyond the grippers for now.",
-    },
-    {
-      title: "It will not watch the kids or the stove",
-      body: "Treat it as an appliance you supervise, not a safety system.",
-    },
-    {
-      title: "Skills do not transfer between homes untouched",
-      body: "Install someone else's skill and expect to give it a few demonstrations of your own.",
-    },
-  ] satisfies Limit[],
-} as const;
-
 export const CLOSING = {
   headline: ["Full price,", "no deposit."],
   price: "$1,688",

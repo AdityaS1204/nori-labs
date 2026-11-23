@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 import Closing from "./Closing";
 import Hardware from "./Hardware";
 import Hero from "./Hero";
-import Limits from "./Limits";
 import SiteFooter from "./SiteFooter";
 import TeachIt from "./TeachIt";
 import TheFace from "./TheFace";
@@ -14,7 +13,6 @@ import {
   FOOTER,
   HARDWARE,
   HERO,
-  LIMITS,
   SUPPORTING_DETAILS,
   TEACH_IT,
   THE_FACE,
@@ -155,21 +153,6 @@ describe("TeachIt", () => {
   });
 });
 
-describe("Limits", () => {
-  it("renders the headline and every limit", () => {
-    const body = text(<Limits />);
-    expect(body).toContain(LIMITS.headline);
-    for (const { title, body: item } of LIMITS.items) {
-      expect(body).toContain(title);
-      expect(body).toContain(item);
-    }
-  });
-
-  it("is reachable from the page by id", () => {
-    expect(markup(<Limits />)).toContain('id="limits"');
-  });
-});
-
 describe("Closing", () => {
   it("renders both headline lines, the price and the cta", () => {
     const body = text(<Closing />);
@@ -200,7 +183,6 @@ describe("scroll entrance", () => {
     markup(<TheFace />),
     markup(<Hardware />),
     markup(<TeachIt />),
-    markup(<Limits />),
     markup(<Closing />),
   ];
 

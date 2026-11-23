@@ -21,21 +21,10 @@ const CLOSE_DELAY = 140;
 const SURFACE = "#171717";
 const SHELL = "#262626";
 
-/**
- * Concave corner flaring the tab base out into the panel top edge. Same fill as
- * both, so the three elements read as the one shape the clip-path describes.
- *
- * The box sits beside the tab, its bottom on the panel edge. Masking out a
- * circle centred on its outer top corner leaves exactly the curved triangle
- * that meets the tab on one side and the panel on the other.
- */
 function Fillet({ side }: { side: "left" | "right" }) {
   const at = side === "left" ? "0% 0%" : "100% 0%";
   const mask = `radial-gradient(circle ${FILLET}px at ${at}, transparent 99%, #000 100%)`;
 
-  // `layout` is what keeps the curve a curve: the parent moves between tabs of
-  // different widths by animating scale, which would stretch an unflagged child
-  // into an ellipse. Flagged children get that scale counteracted each frame.
   return (
     <motion.span
       layout
