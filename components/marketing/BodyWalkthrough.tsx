@@ -19,6 +19,23 @@ const EASE = [0.23, 1, 0.32, 1] as const;
 const STAGES = WALKTHROUGH.stages;
 const CLIP = WALKTHROUGH.clip;
 
+/**
+ * Feathers the clip into the page on every side, so the robot reads as floating
+ * rather than boxed. Two crossed fades composited by intersection: a pixel
+ * survives only where both are opaque, which softens the corners that a single
+ * fade would leave square. The vertical inset is deeper because the studio shot
+ * carries more empty backdrop above and below than beside the body.
+ */
+const FEATHER =
+  "linear-gradient(to right, transparent, #000 7%, #000 93%, transparent), " +
+  "linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent)";
+const FEATHER_STYLE = {
+  maskImage: FEATHER,
+  WebkitMaskImage: FEATHER,
+  maskComposite: "intersect",
+  WebkitMaskComposite: "source-in",
+} as const;
+
 /** Never changes: the store exists only to separate server and client renders. */
 const subscribe = () => () => {};
 
@@ -146,12 +163,13 @@ export default function BodyWalkthrough() {
 
   return (
     <div ref={track} className="relative mt-10" style={{ height: `${STAGES.length * 100}svh` }}>
-      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-7 overflow-hidden px-5 py-20">
+      <div className="sticky top-0 flex h-[100svh] flex-col items-center justify-center gap-6 overflow-hidden px-5 py-12">
         <video
           ref={video}
           src={CLIP.src}
           poster={CLIP.poster}
-          className="max-h-[52svh] w-auto max-w-full object-contain"
+          className="max-h-[64svh] w-auto max-w-full object-contain"
+          style={FEATHER_STYLE}
           aria-hidden="true"
           tabIndex={-1}
           muted
