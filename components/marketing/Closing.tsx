@@ -11,7 +11,7 @@ export default function Closing() {
     <section
       id="order"
       aria-labelledby="closing-headline"
-      className="grid scroll-mt-20 bg-ink md:grid-cols-2"
+      className="grid scroll-mt-20 bg-ink md:min-h-[92svh] md:grid-cols-2"
     >
       <Reveal className="flex flex-col items-start justify-center gap-6 px-5 py-20 sm:px-8 md:py-28 md:pl-[max(2rem,calc((100vw-1180px)/2))]">
 
@@ -42,8 +42,8 @@ export default function Closing() {
         </Squircle>
       </Reveal>
 
-      <Reveal delay={0.08} className="flex items-center justify-center px-5 py-16 sm:px-8 md:py-28">
-        <OrderGallery slides={CLOSING.gallery} />
+      <Reveal delay={0.08} className="flex items-center justify-center px-5 py-16 sm:px-8 md:h-[92svh] md:py-0">
+        <OrderGallery slides={CLOSING.gallery} className="md:h-[90%]" />
       </Reveal>
     </section>
   );

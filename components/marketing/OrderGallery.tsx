@@ -22,7 +22,7 @@ const MARKER: Record<MediaTone, string> = {
   haze: "text-ink/55",
 };
 
-type Props = { slides: readonly MediaSlot[] };
+type Props = { slides: readonly MediaSlot[]; className?: string };
 
 /**
  * The price-section carousel. Works over skeletons today: a slide with no `src`
@@ -34,7 +34,7 @@ type Props = { slides: readonly MediaSlot[] };
  * client-only, so no slide ships hidden (the rule Reveal documents). Direction
  * is tracked so paging left slides the opposite way to paging right.
  */
-export default function OrderGallery({ slides }: Props) {
+export default function OrderGallery({ slides, className = "" }: Props) {
   const reduced = useReducedMotion();
   const labelId = useId();
   const [[active, dir], setState] = useState<[number, number]>([0, 0]);
@@ -54,7 +54,7 @@ export default function OrderGallery({ slides }: Props) {
       role="group"
       aria-roledescription="carousel"
       aria-label="Nori A3 from different angles"
-      className="w-full max-w-[460px]"
+      className={`w-full ${className}`}
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") paginate(-1);
         else if (e.key === "ArrowRight") paginate(1);
@@ -62,7 +62,7 @@ export default function OrderGallery({ slides }: Props) {
     >
       <Squircle cornerRadius={RADIUS.gallery}>
         <div
-          className={`relative w-full ${TONES[slide.tone]}`}
+          className={`relative w-full md:h-full ${TONES[slide.tone]}`}
           style={{ aspectRatio: slide.ratio }}
         >
           <AnimatePresence initial={false} custom={dir} mode="popLayout">
