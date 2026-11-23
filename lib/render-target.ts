@@ -19,6 +19,7 @@ import {
   type NoriBrowParams,
   type NoriEyeParams,
   type NoriFaceParams,
+  type NoriMouthParams,
 } from "@/lib/nori-face";
 
 export type RenderTarget = "web" | "lvgl";
@@ -170,6 +171,19 @@ function browForTarget(brow: NoriBrowParams, caps: TargetCapabilities): NoriBrow
   };
 }
 
+function mouthForTarget(mouth: NoriMouthParams, caps: TargetCapabilities): NoriMouthParams {
+  if (!caps.integerGeometry) return { ...mouth };
+  return {
+    ...mouth,
+    width: whole(mouth.width),
+    height: whole(mouth.height),
+    radius: whole(mouth.radius),
+    curve: whole(mouth.curve),
+    thickness: whole(mouth.thickness),
+    offsetY: whole(mouth.offsetY),
+  };
+}
+
 /**
  * Clamp a face to what `target` can draw. Non-destructive by design: the
  * playground keeps the authored face intact and only passes it through here on
@@ -188,6 +202,7 @@ export function faceForTarget(face: NoriFaceParams, target: RenderTarget): NoriF
     right: eyeForTarget(face.right, caps),
     leftBrow: browForTarget(face.leftBrow, caps),
     rightBrow: browForTarget(face.rightBrow, caps),
+    mouth: mouthForTarget(face.mouth, caps),
   };
 }
 

@@ -94,6 +94,29 @@ describe("faceForTarget", () => {
     expect(face.left.shape).toBe("custom");
     expect(face.left.customSvg).toBeTruthy();
   });
+
+  it("integer-snaps the mouth under LVGL", () => {
+    const face = cloneFace(NEUTRAL_FACE);
+    face.mouth = {
+      ...face.mouth,
+      width: 120.7,
+      height: 10.4,
+      curve: 12.9,
+      offsetY: 3.6,
+      radius: 4.8,
+      thickness: 9.3,
+    };
+    const out = faceForTarget(face, "lvgl").mouth;
+    for (const v of [out.width, out.height, out.curve, out.offsetY, out.radius, out.thickness]) {
+      expect(Number.isInteger(v)).toBe(true);
+    }
+  });
+
+  it("passes the mouth through unchanged on web", () => {
+    const face = cloneFace(NEUTRAL_FACE);
+    face.mouth = { ...face.mouth, width: 120.7 };
+    expect(faceForTarget(face, "web").mouth.width).toBe(120.7);
+  });
 });
 
 describe("droppedShapeIn", () => {

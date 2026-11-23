@@ -13,7 +13,7 @@ import {
   presetToPack,
   slugifyStateId,
 } from "@/lib/face-pack";
-import { NEUTRAL_FACE } from "@/lib/nori-face";
+import { NEUTRAL_FACE, NEUTRAL_MOUTH } from "@/lib/nori-face";
 import { cloneFace, newPreset, type Preset } from "@/lib/presets";
 import { DEFAULT_RENDER } from "@/lib/render-target";
 
@@ -352,5 +352,18 @@ describe("neutralPack", () => {
     expect(parsePack(JSON.parse(JSON.stringify(pack)))).toEqual(pack);
     expect(packState(pack, "neutral")?.label).toBe("Neutral");
     expect(packState(pack, "missing")).toBeUndefined();
+  });
+});
+
+describe("parsePack mouth back-compat", () => {
+  it("parses a pre-mouth pack by backfilling the mouth", () => {
+    const raw = JSON.parse(JSON.stringify(presetToPack(presetWith(["Neutral"]))));
+    for (const s of raw.states) {
+      delete s.face.mouth;
+      delete s.face.mouthEnabled;
+    }
+    const parsed = parsePack(raw);
+    expect(parsed.states[0].face.mouthEnabled).toBe(false);
+    expect(parsed.states[0].face.mouth).toEqual(NEUTRAL_MOUTH);
   });
 });
