@@ -65,6 +65,8 @@ export const SUGGESTED_LABELS = [
   "Angry",
 ] as const;
 
+export type SuggestedLabel = (typeof SUGGESTED_LABELS)[number];
+
 export type SortKey = "popular" | "recent" | "alpha";
 
 export const SORT_OPTIONS: { key: SortKey; label: string }[] = [

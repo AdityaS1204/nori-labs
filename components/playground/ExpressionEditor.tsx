@@ -15,6 +15,7 @@ import {
   type Preset,
 } from "@/lib/presets";
 import { packFileName, presetToPack, transitionFor } from "@/lib/face-pack";
+import { poseFor } from "@/lib/face-poses";
 import { faceForTarget, type RenderConfig, type RenderTarget } from "@/lib/render-target";
 import { createPreset } from "@/lib/presets-create";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -211,7 +212,7 @@ export default function ExpressionEditor({ initialPreset }: ExpressionEditorProp
 
   /* ── State (bundle) management ── */
   const addState = useCallback((label: string) => {
-    const s = newState(label);
+    const s = newState(label, poseFor(label));
     setPreset((p) => ({ ...p, states: [...p.states, s] }));
     setActiveId(s.id);
   }, []);
