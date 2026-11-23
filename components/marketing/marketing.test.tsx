@@ -160,6 +160,16 @@ describe("Closing", () => {
     expect(body).toContain(CLOSING.price);
     expect(markup(<Closing />)).toContain(`href="${CLOSING.cta.href}"`);
   });
+
+  it("carries the angle carousel with every slide and its controls", () => {
+    const html = markup(<Closing />);
+    // Each slide is reachable: the dots label every angle even though only the
+    // first renders server-side.
+    for (const { slot } of CLOSING.gallery) expect(html).toContain(`aria-label="${slot}"`);
+    expect(html).toContain('aria-label="Previous angle"');
+    expect(html).toContain('aria-label="Next angle"');
+    expect(html).toContain('aria-roledescription="carousel"');
+  });
 });
 
 describe("SiteFooter", () => {
@@ -222,7 +232,6 @@ const ALL_SLOTS: MediaSlot[] = [
   WHAT_IT_IS.hero,
   ...WHAT_IT_IS.pair,
   TEACH_IT.media,
-  CLOSING.media,
 ];
 
 // Hardware is left out: its only footage is the walkthrough clip, which is not

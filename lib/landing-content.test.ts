@@ -22,7 +22,7 @@ const allMedia: MediaSlot[] = [
   ...WHAT_IT_IS.pair,
   WALKTHROUGH.fallback,
   TEACH_IT.media,
-  CLOSING.media,
+  ...CLOSING.gallery,
 ];
 
 describe("landing content", () => {
@@ -34,6 +34,16 @@ describe("landing content", () => {
     expect(TEACH_IT.steps).toHaveLength(4);
     expect(SUPPORTING_DETAILS).toHaveLength(3);
     expect(HARDWARE.specs.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("offers the order carousel several angles, each ready for a photo", () => {
+    expect(CLOSING.gallery.length).toBeGreaterThanOrEqual(2);
+    for (const { slot, ratio } of CLOSING.gallery) {
+      expect(slot.length).toBeGreaterThan(0);
+      const [w, h] = ratio.split("/").map((n) => Number(n.trim()));
+      expect(w).toBeGreaterThan(0);
+      expect(h).toBeGreaterThan(0);
+    }
   });
 
   it("places the inline mark inside the first headline line", () => {

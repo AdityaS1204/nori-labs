@@ -3,7 +3,7 @@ import Link from "next/link";
 import Squircle from "@/components/ui/Squircle";
 import { RADIUS } from "@/components/ui/radius";
 import { CLOSING } from "@/lib/landing-content";
-import MediaCard from "./MediaCard";
+import OrderGallery from "./OrderGallery";
 import Reveal from "./Reveal";
 
 export default function Closing() {
@@ -42,7 +42,9 @@ export default function Closing() {
         </Squircle>
       </Reveal>
 
-      <MediaCard media={CLOSING.media} className="min-h-full" cornerRadius={0} />
+      <Reveal delay={0.08} className="flex items-center justify-center px-5 py-16 sm:px-8 md:py-28">
+        <OrderGallery slides={CLOSING.gallery} />
+      </Reveal>
     </section>
   );
 }
