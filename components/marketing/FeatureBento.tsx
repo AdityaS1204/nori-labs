@@ -102,7 +102,7 @@ function NoriLabWindow() {
 export default function FeatureBento() {
   return (
     <section id="teach-it" aria-labelledby="bento-headline" className="scroll-mt-20 bg-ink">
-      <div className="mx-auto max-w-[1180px] px-5 py-20 sm:px-8 md:py-28">
+      <div className="mx-auto max-w-[1180px] px-5 pb-20 pt-12 sm:px-8 md:pb-28 md:pt-16">
         <Reveal className="flex max-w-[52ch] flex-col gap-4">
           <h2
             id="bento-headline"
