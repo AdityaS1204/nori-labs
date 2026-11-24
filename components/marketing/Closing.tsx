@@ -43,7 +43,7 @@ export default function Closing() {
       </Reveal>
 
       <Reveal delay={0.08} className="flex items-center justify-center px-5 py-16 sm:px-8 md:h-[92svh] md:py-0">
-        <OrderGallery slides={CLOSING.gallery} className="md:h-[90%]" />
+        <OrderGallery slides={CLOSING.gallery} className="md:h-[90%] md:w-auto" />
       </Reveal>
     </section>
   );

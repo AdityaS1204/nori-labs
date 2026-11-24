@@ -62,7 +62,7 @@ export default function OrderGallery({ slides, className = "" }: Props) {
     >
       <Squircle cornerRadius={RADIUS.gallery}>
         <div
-          className={`relative w-full md:h-full ${TONES[slide.tone]}`}
+          className={`relative w-full md:h-full md:w-auto ${TONES[slide.tone]}`}
           style={{ aspectRatio: slide.ratio }}
         >
           <AnimatePresence initial={false} custom={dir} mode="popLayout">
