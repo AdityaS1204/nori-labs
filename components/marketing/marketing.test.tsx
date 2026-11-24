@@ -2,11 +2,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import Closing from "./Closing";
+import FeatureBento from "./FeatureBento";
 import Hardware from "./Hardware";
 import Hero from "./Hero";
 import SiteFooter from "./SiteFooter";
-import TeachIt from "./TeachIt";
-import TheFace from "./TheFace";
 import WhatItIs from "./WhatItIs";
 import {
   CLOSING,
@@ -84,17 +83,27 @@ describe("WhatItIs", () => {
   });
 });
 
-describe("TheFace", () => {
-  const html = markup(<TheFace />);
+// The two old sections ("Teach it a skill" and "Its face tells you what it's
+// doing") are now one bento grid, so both halves — and both nav anchors — have
+// to survive in the single component.
+describe("FeatureBento", () => {
+  const el = <FeatureBento />;
+  const html = markup(el);
+  const body = text(el);
 
-  it("renders the headline, body and playground cta", () => {
-    const body = text(<TheFace />);
-    expect(body).toContain(THE_FACE.headline);
-    expect(body).toContain(THE_FACE.cta.label);
+  it("carries the teaching half: headline, the library cta, and every step in order", () => {
+    expect(body).toContain(TEACH_IT.headline);
+    expect(body).toContain(TEACH_IT.cta.label);
+    expect(html).toContain(`href="${TEACH_IT.cta.href}"`);
+    const positions = TEACH_IT.steps.map((s) => body.indexOf(s.title));
+    expect(positions.every((p) => p >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 
-  it("labels all four states and says what the robot is doing in each", () => {
-    const body = text(<TheFace />);
+  it("carries the face half: headline, playground cta, and every state said in full", () => {
+    expect(body).toContain(THE_FACE.headline);
+    expect(body).toContain(THE_FACE.cta.label);
+    expect(html).toContain(`href="${THE_FACE.cta.href}"`);
     for (const { label, note } of FACE_GRID) {
       expect(body).toContain(label);
       expect(body).toContain(note);
@@ -104,6 +113,12 @@ describe("TheFace", () => {
   it("draws each face with the real svg renderer rather than mock shapes", () => {
     expect(html.match(/<svg/g)?.length).toBeGreaterThanOrEqual(FACE_GRID.length);
     expect(html).toContain('viewBox="0 0 440 320"');
+  });
+
+  it("keeps both section anchors and a labelled heading", () => {
+    expect(html).toContain('id="teach-it"');
+    expect(html).toContain('id="the-face"');
+    expect(html).toContain('id="bento-headline"');
   });
 });
 
@@ -140,17 +155,6 @@ describe("Hardware", () => {
       expect(body).toContain(label);
       expect(body).toContain(value);
     }
-  });
-});
-
-describe("TeachIt", () => {
-  it("renders the headline, cta and all three steps in order", () => {
-    const body = text(<TeachIt />);
-    expect(body).toContain(TEACH_IT.headline);
-    expect(body).toContain(TEACH_IT.cta.label);
-    const positions = TEACH_IT.steps.map((s) => body.indexOf(s.title));
-    expect(positions.every((p) => p >= 0)).toBe(true);
-    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 });
 
@@ -200,9 +204,8 @@ describe("scroll entrance", () => {
   const pages = [
     markup(<Hero />),
     markup(<WhatItIs />),
-    markup(<TheFace />),
+    markup(<FeatureBento />),
     markup(<Hardware />),
-    markup(<TeachIt />),
     markup(<Closing />),
   ];
 
@@ -237,29 +240,14 @@ describe("scroll entrance", () => {
   });
 });
 
-const ALL_SLOTS: MediaSlot[] = [
-  HERO.media,
-  WHAT_IT_IS.hero,
-  ...WHAT_IT_IS.pair,
-  TEACH_IT.media,
-];
+const ALL_SLOTS: MediaSlot[] = [HERO.media, WHAT_IT_IS.hero, ...WHAT_IT_IS.pair];
 
-// Hardware is left out: its only footage is the walkthrough clip, which is not
-// a MediaSlot and would throw off both counts below.
-const everySection = [
-  markup(<Hero />),
-  markup(<WhatItIs />),
-  markup(<TeachIt />),
-  markup(<Closing />),
-].join("");
+// Hardware and the bento are left out: Hardware's only footage is the
+// walkthrough clip (not a MediaSlot), and the bento renders faux UI rather than
+// any media slot, so neither feeds the counts below.
+const everySection = [markup(<Hero />), markup(<WhatItIs />), markup(<Closing />)].join("");
 
 describe("media slots", () => {
-  it("labels every unfilled slot as an image for assistive tech", () => {
-    const empty = ALL_SLOTS.filter((m) => !m.src).length;
-    expect(empty).toBeGreaterThan(0);
-    expect(everySection.match(/aria-label="Placeholder: /g)?.length).toBe(empty);
-  });
-
   it("renders a looping muted video for every filled slot", () => {
     const filled = ALL_SLOTS.filter((m) => m.src);
     expect(filled.length).toBe(4);
