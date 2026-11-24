@@ -44,7 +44,7 @@ function Tile({
     <Squircle cornerRadius={RADIUS.surface}>
       <article
         id={id}
-        className={`relative flex h-full flex-col overflow-hidden border border-white/[0.06] bg-[#1c1b1e] ${className}`}
+        className={`relative flex h-full flex-col overflow-hidden border border-white/[0.06] bg-[#1c1b1e] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07),inset_0_18px_40px_-30px_rgba(255,255,255,0.05),inset_0_-28px_56px_-28px_rgba(0,0,0,0.6)] ${className}`}
       >
         {children}
       </article>
@@ -226,24 +226,42 @@ export default function FeatureBento() {
               <p className="m-0 mt-2 max-w-[30ch] text-[12.5px] leading-relaxed text-white/50">
                 Publish to the Skills Marketplace, or install one someone else trained.
               </p>
-              <ul
-                className="m-0 mt-5 flex list-none flex-col gap-2 p-0 [mask-image:linear-gradient(to_bottom,#000_66%,transparent)]"
-                role="list"
+              {/* Faux Skills Marketplace — a chrome-less UI fragment that dissolves at the foot. */}
+              <div
+                className="mt-5 flex flex-col gap-2 [mask-image:linear-gradient(to_bottom,#000_62%,transparent)]"
                 aria-hidden="true"
               >
-                {SKILLS.map((s) => (
-                  <li
-                    key={s.name}
-                    className="flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.03] px-3 py-2.5"
-                  >
-                    <span className="h-7 w-7 shrink-0 rounded-[7px] bg-gradient-to-br from-sage to-lime/70" />
-                    <span className="text-[12.5px] font-medium text-white/80">{s.name}</span>
-                    <span className="ml-auto font-mono text-[10px] tabular-nums text-white/35">
-                      ↓ {s.installs}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                <div className="flex items-center gap-2 rounded-[9px] border border-white/10 bg-white/[0.03] px-2.5 py-2">
+                  <span className="relative h-3 w-3 shrink-0">
+                    <span className="absolute left-0 top-0 h-2 w-2 rounded-full border border-white/40" />
+                    <span className="absolute bottom-[1px] right-0 h-[5px] w-px rotate-45 bg-white/40" />
+                  </span>
+                  <span className="text-[11px] text-white/35">Search skills</span>
+                  <span className="ml-auto rounded-full bg-white/[0.06] px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.1em] text-white/45">
+                    Popular
+                  </span>
+                </div>
+
+                <ul className="m-0 flex list-none flex-col gap-2 p-0" role="list">
+                  {SKILLS.map((s) => (
+                    <li
+                      key={s.name}
+                      className="flex items-center gap-2.5 rounded-[10px] border border-white/[0.06] bg-white/[0.03] px-2.5 py-2"
+                    >
+                      <span className="h-7 w-7 shrink-0 rounded-[7px] bg-gradient-to-br from-sage to-lime/70" />
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-[12px] font-medium text-white/80">{s.name}</span>
+                        <span className="font-mono text-[9px] tabular-nums text-white/35">
+                          ↓ {s.installs} installs
+                        </span>
+                      </span>
+                      <span className="ml-auto rounded-full border border-lime/40 px-2.5 py-1 text-[9.5px] font-medium text-lime">
+                        Get
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </Tile>
           </Reveal>
         </div>
