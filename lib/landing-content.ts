@@ -28,8 +28,6 @@ export type MediaSlot = {
   src?: string;
   /** Renders a play affordance for slots still waiting on footage. */
   video?: boolean;
-  /** Large headline set over the card, bottom-left. */
-  overlay?: string;
   capture?: CaptureMode;
 };
 
@@ -187,7 +185,6 @@ export const WHAT_IT_IS = {
     tone: "haze",
     ratio: "16 / 9",
     src: "https://res.cloudinary.com/dp5tdrmf8/video/upload/v1794986981/Kitchen-2_t9xejc.mp4",
-    overlay: "Helping in the kitchen.",
   } satisfies MediaSlot,
   pair: [
     {
@@ -361,12 +358,31 @@ export const CLOSING = {
   body: "Reserve a NORI A3 at the launch price. Ships Fall 2026, assembled in San Francisco.",
   cta: { label: "Order an A3", href: "/preorder" },
   // Shot from several angles. `slot` is the caption and alt until a photo lands;
-  // one shared ratio keeps every slide the same height so paging never jumps.
   gallery: [
-    { slot: "Front", tone: "sage", ratio: "4 / 5" },
-    { slot: "Three-quarter", tone: "ink", ratio: "4 / 5" },
-    { slot: "Side", tone: "haze", ratio: "4 / 5" },
-    { slot: "Back", tone: "sage", ratio: "4 / 5" },
+    {
+      slot: "Front",
+      tone: "ink",
+      ratio: "4 / 5",
+      src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/v1795673987/Industrial_Robot_Portrait_with_Glowing_Eyes_zqqhpp.png",
+    },
+    {
+      slot: "Three-quarter",
+      tone: "ink",
+      ratio: "4 / 5",
+      src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/v1795673983/Industrial_White_Robot_Product_Render_pf916q.png",
+    },
+    {
+      slot: "Back",
+      tone: "ink",
+      ratio: "4 / 5",
+      src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/v1795673979/Rear-View_Industrial_Robot_with_Red_Stop_Button_eozn5k.png",
+    },
+    {
+      slot: "Side",
+      tone: "ink",
+      ratio: "4 / 5",
+      src: "https://res.cloudinary.com/dp5tdrmf8/image/upload/v1795673984/Robotic_Mobile_Base_Product_Render_qwerel.png",
+    },
   ] satisfies MediaSlot[],
 } as const;
 

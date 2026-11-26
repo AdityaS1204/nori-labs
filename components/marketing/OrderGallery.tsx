@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import Squircle from "@/components/ui/Squircle";
@@ -45,6 +45,14 @@ export default function OrderGallery({ slides, className = "" }: Props) {
     [count],
   );
   const goTo = useCallback((i: number) => setState(([prev]) => [i, Math.sign(i - prev)]), []);
+
+  useEffect(() => {
+    if (count <= 1) return;
+    const timer = setInterval(() => {
+      paginate(1);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [count, paginate, active]);
 
   const slide = slides[active];
   const filled = Boolean(slide.src);
