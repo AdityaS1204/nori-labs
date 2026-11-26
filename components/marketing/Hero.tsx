@@ -10,7 +10,7 @@ import Reveal from "./Reveal";
 export default function Hero() {
   return (
     <section id="intro" aria-labelledby="hero-headline" className="bg-ink">
-      <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 pb-6 pt-28 sm:px-8 md:pt-32">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-5 pb-6 pt-28 sm:px-8 lg:px-12 md:pt-32">
 
         <Reveal className="flex flex-col gap-7">
           <h1
@@ -55,10 +55,10 @@ export default function Hero() {
         </Reveal>
       </div>
 
-      <div className="px-3 pb-16">
+      <div className="mx-auto w-full max-w-[1600px] px-5 pb-16 sm:px-8 lg:px-12">
         <HeroMedia />
 
-        <Reveal className="mx-auto mt-3 max-w-[1180px]" delay={0.05}>
+        <Reveal className="mt-3" delay={0.05}>
           <Squircle cornerRadius={RADIUS.surface}>
             <dl className="m-0 grid gap-px overflow-hidden bg-white/[0.08] sm:grid-cols-3">
             {SUPPORTING_DETAILS.map(({ label, value }) => (

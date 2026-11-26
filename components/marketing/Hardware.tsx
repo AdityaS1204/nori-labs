@@ -6,8 +6,8 @@ import Reveal from "./Reveal";
 
 export default function Hardware() {
   return (
-    <section id="hardware" aria-labelledby="hardware-headline" className="scroll-mt-20 bg-cream py-20 md:py-28">
-      <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
+    <section id="hardware" aria-labelledby="hardware-headline" className="scroll-mt-20 bg-cream py-14 md:py-20">
+      <div className="mx-auto w-full max-w-[1600px] px-5 sm:px-8 lg:px-12">
         <Reveal>
           <h2
             id="hardware-headline"
@@ -21,7 +21,7 @@ export default function Hardware() {
       {/* Outside the measured column: the tour runs full-bleed. */}
       <BodyWalkthrough />
 
-      <div className="mx-auto mt-14 max-w-[1180px] px-5 sm:px-8">
+      <div className="mx-auto mt-14 w-full max-w-[1600px] px-5 sm:px-8 lg:px-12">
         <Reveal delay={0.05}>
           <Squircle cornerRadius={RADIUS.surface}>
             <dl className="m-0 grid gap-px overflow-hidden bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">

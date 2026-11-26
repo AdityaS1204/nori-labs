@@ -7,9 +7,9 @@ export default function WhatItIs() {
     <section
       id="what-it-is"
       aria-labelledby="what-it-is-headline"
-      className="scroll-mt-20 bg-cream py-20 md:py-28"
+      className="scroll-mt-20 bg-cream py-14 md:py-20"
     >
-      <div className="mx-auto flex max-w-[1180px] flex-col gap-10 px-5 sm:px-8">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-5 sm:px-8 lg:px-12">
 
         <Reveal>
           <h2
@@ -21,7 +21,7 @@ export default function WhatItIs() {
         </Reveal>
       </div>
 
-      <div className="mt-10 flex flex-col gap-3 px-3">
+      <div className="mx-auto mt-10 flex w-full max-w-[1600px] flex-col gap-3 px-5 sm:px-8 lg:px-12">
         <Reveal>
           <MediaCard media={WHAT_IT_IS.hero} />
         </Reveal>
