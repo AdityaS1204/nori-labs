@@ -11,9 +11,9 @@ export default function Closing() {
     <section
       id="order"
       aria-labelledby="closing-headline"
-      className="grid scroll-mt-20 bg-ink md:min-h-[92svh] md:grid-cols-2"
+      className="relative grid scroll-mt-20 bg-ink pb-16 sm:pb-20 md:min-h-[92svh] md:grid-cols-2 md:pb-24"
     >
-      <Reveal className="flex flex-col items-start justify-center gap-6 px-5 py-20 sm:px-8 md:py-28 md:pl-[max(2rem,calc((100vw-1180px)/2))]">
+      <Reveal className="flex flex-col items-start justify-center gap-6 px-5 py-16 sm:px-8 md:py-20 md:pl-[max(2rem,calc((100vw-1600px)/2+2rem))]">
 
         <h2
           id="closing-headline"
@@ -45,6 +45,12 @@ export default function Closing() {
       <Reveal delay={0.08} className="flex items-center justify-center px-5 py-16 sm:px-8 md:h-[92svh] md:py-0">
         <OrderGallery slides={CLOSING.gallery} className="md:h-[90%] md:w-auto" />
       </Reveal>
+
+      {/* Seamless gradient mask & blend into the cream footer */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 sm:h-40 md:h-52 bg-gradient-to-b from-transparent via-cream/40 to-cream"
+      />
     </section>
   );
 }

@@ -41,26 +41,17 @@ export default function MediaCard({ media, className = "", cornerRadius = RADIUS
     >
       {media.src ? <MediaVideo src={media.src} label={media.slot} /> : null}
 
-      {filled ? (
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 z-[5] h-2/5 bg-gradient-to-t from-black/55 to-transparent"
-        />
+      {!filled ? (
+        <figcaption
+          className={`absolute left-3 top-3 z-10 rounded-[3px] bg-black/[0.07] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${marker}`}
+        >
+          {media.slot}
+        </figcaption>
       ) : null}
 
-      <figcaption
-        className={`absolute left-3 top-3 z-10 rounded-[3px] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${
-          filled ? "bg-black/35 backdrop-blur-sm" : "bg-black/[0.07]"
-        } ${marker}`}
-      >
-        {media.slot}
-      </figcaption>
-
-      {media.capture ? (
+      {media.capture && !filled ? (
         <span
-          className={`absolute right-3 top-3 z-10 rounded-[3px] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] ${
-            filled ? "bg-black/45 text-white/85 backdrop-blur-sm" : "bg-black/[0.1] text-ink/70"
-          }`}
+          className="absolute right-3 top-3 z-10 rounded-[3px] bg-black/[0.1] px-2 py-1 font-mono text-[9.5px] uppercase leading-none tracking-[0.1em] text-ink/70"
         >
           {media.capture}
         </span>
@@ -77,13 +68,7 @@ export default function MediaCard({ media, className = "", cornerRadius = RADIUS
         </span>
       ) : null}
 
-      {media.overlay ? (
-        <p className="absolute bottom-5 left-5 z-10 m-0 max-w-[14ch] font-display text-[clamp(22px,3.4vw,38px)] font-semibold leading-[1.14] tracking-[-0.008em] text-white drop-shadow-[0_1px_12px_rgba(0,0,0,0.35)]">
-          {media.overlay}
-        </p>
-      ) : null}
-
-      {media.note ? (
+      {!filled && media.note ? (
         <p
           className={`absolute bottom-3 right-3 z-10 m-0 max-w-[26ch] text-right font-mono text-[9.5px] leading-[1.5] tracking-[0.04em] ${marker}`}
         >

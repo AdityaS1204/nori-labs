@@ -21,19 +21,8 @@ const SOCIAL_ICON: Record<string, typeof NewTwitterIcon> = {
 
 export default function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden bg-ink">
-      {/* Light cast from above: a soft white glow masked to the top edge, so the
-          footer blends up into the dark section rather than meeting it on a line. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72"
-        style={{
-          background:
-            "radial-gradient(130% 115% at 50% -16%, rgba(255,255,255,0.26), rgba(255,255,255,0.08) 34%, transparent 60%)",
-        }}
-      />
-
-      <div className="relative z-10 mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+    <footer className="relative overflow-hidden bg-cream text-ink">
+      <div className="relative z-10 mx-auto w-full max-w-[1600px] px-5 py-14 sm:px-8 lg:px-12">
         <div className="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)_1.6fr]">
           {/* Brand: small logo, tagline, social chips */}
           <div className="flex flex-col gap-5">
@@ -43,12 +32,12 @@ export default function SiteFooter() {
               className="flex w-fit items-center gap-2 text-[26px] no-underline transition-opacity duration-150 hover:opacity-70"
             >
               <NoriMark className="h-[0.9em] w-[0.9em]" />
-              <span className="font-display font-semibold leading-none tracking-[-0.02em] text-white">
+              <span className="font-display font-semibold leading-none tracking-[-0.02em] text-ink">
                 nori
               </span>
             </Link>
 
-            <p className="m-0 max-w-[22ch] text-[13px] leading-snug text-white/50">
+            <p className="m-0 max-w-[22ch] text-[13px] leading-snug text-ink/65">
               {FOOTER.tagline}
             </p>
 
@@ -60,7 +49,7 @@ export default function SiteFooter() {
                     target="_blank"
                     rel="noreferrer noopener"
                     aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-white/10 bg-white/[0.04] text-white/70 transition-colors duration-150 hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
+                    className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-ink/10 bg-ink/[0.04] text-ink/70 transition-colors duration-150 hover:border-ink/25 hover:bg-ink/[0.08] hover:text-ink"
                   >
                     <HugeiconsIcon icon={SOCIAL_ICON[label] ?? GithubIcon} size={16} color="currentColor" />
                   </a>
@@ -72,7 +61,7 @@ export default function SiteFooter() {
           {/* Link columns */}
           {FOOTER.columns.map((column) => (
             <nav key={column.title} aria-label={column.title} className="flex flex-col gap-3">
-              <h2 className="m-0 font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/35">
+              <h2 className="m-0 font-mono text-[9.5px] uppercase tracking-[0.18em] text-ink/40">
                 {column.title}
               </h2>
               <ul className="m-0 flex list-none flex-col gap-2 p-0">
@@ -80,7 +69,7 @@ export default function SiteFooter() {
                   <li key={href + label}>
                     <Link
                       href={href}
-                      className="text-[13px] text-white/55 no-underline transition-colors duration-150 hover:text-white"
+                      className="text-[13px] text-ink/65 no-underline transition-colors duration-150 hover:text-ink"
                     >
                       {label}
                     </Link>
@@ -94,7 +83,7 @@ export default function SiteFooter() {
           <NewsletterForm />
         </div>
 
-        <p className="m-0 mt-12 max-w-[48ch] font-mono text-[9.5px] uppercase leading-[1.6] tracking-[0.14em] text-white/30">
+        <p className="m-0 mt-12 max-w-[48ch] font-mono text-[9.5px] uppercase leading-[1.6] tracking-[0.14em] text-ink/40">
           {FOOTER.note}
         </p>
       </div>
@@ -104,7 +93,7 @@ export default function SiteFooter() {
         href="/"
         aria-hidden="true"
         tabIndex={-1}
-        className="pointer-events-none relative z-10 flex w-full items-center justify-center gap-[0.12em] text-[clamp(96px,26vw,260px)] leading-[0.8] text-white/90"
+        className="pointer-events-none relative z-10 flex w-full items-center justify-center gap-[0.12em] text-[clamp(96px,26vw,260px)] leading-[0.8] text-ink/90"
         style={{ marginBottom: "-0.18em" }}
       >
         <NoriMark className="h-[0.82em] w-[0.82em]" />

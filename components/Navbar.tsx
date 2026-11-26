@@ -130,7 +130,7 @@ export default function Navbar() {
 
         {/* Mobile toggle */}
         <button
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-md text-white hover:bg-white/[0.06] transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.96] flex-shrink-0"
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-md text-white hover:bg-white/6 transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.96] flex-shrink-0"
           onClick={() => setOpen(o => !o)}
           aria-label={open ? 'Close navigation menu' : 'Open navigation menu'}
           aria-expanded={open}

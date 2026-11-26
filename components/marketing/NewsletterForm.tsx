@@ -24,7 +24,7 @@ export default function NewsletterForm() {
         if (email) setDone(true);
       }}
     >
-      <p className="m-0 text-[12.5px] font-medium text-white/80">{title}</p>
+      <p className="m-0 text-[12.5px] font-medium text-ink/80">{title}</p>
 
       <Squircle cornerRadius={RADIUS.control}>
         <input
@@ -37,7 +37,7 @@ export default function NewsletterForm() {
           }}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="w-full border border-white/15 bg-white/[0.04] px-4 py-2.5 text-[13px] text-white placeholder:text-white/35 focus:border-white/35 focus:outline-none"
+          className="w-full border border-ink/15 bg-ink/[0.04] px-4 py-2.5 text-[13px] text-ink placeholder:text-ink/40 focus:border-ink/40 focus:outline-none"
         />
       </Squircle>
 
@@ -50,7 +50,7 @@ export default function NewsletterForm() {
         </button>
       </Squircle>
 
-      <p className="m-0 min-h-[1.1em] text-[11px] text-white/40" aria-live="polite">
+      <p className="m-0 min-h-[1.1em] text-[11px] text-ink/50" aria-live="polite">
         {done ? "Thanks — we'll be in touch at launch." : " "}
       </p>
     </form>

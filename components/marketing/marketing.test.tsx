@@ -77,10 +77,6 @@ describe("WhatItIs", () => {
       else expect(html).toContain(`aria-label="Placeholder: ${m.slot}"`);
     }
   });
-
-  it("sets the overlay headline over the lead video", () => {
-    expect(text(<WhatItIs />)).toContain(WHAT_IT_IS.hero.overlay);
-  });
 });
 
 // The two old sections ("Teach it a skill" and "Its face tells you what it's
